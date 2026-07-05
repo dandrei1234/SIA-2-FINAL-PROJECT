@@ -12,7 +12,6 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(false);
 
-  // Modal states for Editing
   const [editOpen, setEditOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [editStatus, setEditStatus] = useState("");
@@ -20,12 +19,6 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
   const [editCheckIn, setEditCheckIn] = useState("");
   const [editCheckOut, setEditCheckOut] = useState("");
 
-  // Modal states for Manual Add
-  const [addOpen, setAddOpen] = useState(false);
-  const [availableMembers, setAvailableMembers] = useState([]);
-  const [addMemberId, setAddMemberId] = useState("");
-  const [addStatus, setAddStatus] = useState("Present");
-  const [addRemarks, setAddRemarks] = useState("");
 
   useEffect(() => {
     if (eventId) {
@@ -49,7 +42,6 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
     setSelectedRecord(record);
     setEditStatus(record.status);
     setEditRemarks(record.remarks || "");
-    // Format dates to datetime-local input style (YYYY-MM-DDTHH:MM)
     if (record.checkIn) {
       setEditCheckIn(new Date(record.checkIn).toISOString().slice(0, 16));
     } else {
@@ -93,58 +85,7 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
     }
   };
 
-  const handleOpenAdd = async () => {
-    try {
-      const membersRes = await axios.get("http://localhost:1337/api/members");
-      const activeMembers = membersRes.data.filter(m => m.status === "Active");
 
-      // Filter out members who already have check-ins
-      const alreadyCheckedIn = new Set(records.map(r => r.member?._id));
-      const unlogged = activeMembers.filter(m => !alreadyCheckedIn.has(m._id));
-
-      setAvailableMembers(unlogged);
-      setAddMemberId("");
-      setAddStatus("Present");
-      setAddRemarks("");
-      setAddOpen(true);
-    } catch (error) {
-      console.error("Error preparing manual check-in list:", error);
-    }
-  };
-
-  const handleSaveAdd = async () => {
-    if (!addMemberId) return;
-    const selectedMem = availableMembers.find(m => m._id === addMemberId);
-    if (!selectedMem) return;
-
-    try {
-      // We will perform a custom check-in scan via API
-      await axios.post("http://localhost:1337/api/attendance/check-in", {
-        studentId: selectedMem.studentId,
-        eventId,
-      });
-
-      // Update status & remarks manually if they customized it
-      const updatedList = await axios.get(`http://localhost:1337/api/attendance/event/${eventId}`);
-      const newlyAdded = updatedList.data.find(r => r.member?._id === addMemberId);
-
-      if (newlyAdded && (addStatus !== "Present" || addRemarks)) {
-        await axios.put(`http://localhost:1337/api/attendance/${newlyAdded._id}`, {
-          status: addStatus,
-          remarks: addRemarks
-        });
-      }
-
-      setAddOpen(false);
-      fetchRecords();
-      if (onRecordChange) onRecordChange();
-    } catch (error) {
-      console.error("Error manually adding record:", error);
-      alert(error.response?.data?.message || "Failed to log attendance.");
-    }
-  };
-
-  // Filters and search logic
   const filteredRecords = records.filter((r) => {
     const student = r.member;
     if (!student) return false;
@@ -178,27 +119,14 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
   return (
     <div className="glass-panel" style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "20px" }}>
 
-      {/* Title & Add Actions */}
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
         <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "18px", fontWeight: "600", textAlign: "left" }}>
           📝 Attendance Sheet & Registry
         </h3>
-        <Button
-          variant="outlined"
-          onClick={handleOpenAdd}
-          style={{
-            borderColor: "var(--accent-cyan)",
-            color: "var(--accent-cyan)",
-            textTransform: "none",
-            borderRadius: "var(--border-radius-md)",
-            fontWeight: "600",
-          }}
-        >
-          ➕ Manual Check-In Override
-        </Button>
       </div>
 
-      {/* Filter and Search Bar */}
+
       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
         <TextField
           label="Search Student Name or ID..."
@@ -227,7 +155,7 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
         </FormControl>
       </div>
 
-      {/* Attendance Table */}
+
       <TableContainer component={Paper} className="glass-panel" style={{ background: "transparent", border: "none", maxHeight: "400px", overflowY: "auto" }}>
         <Table stickyHeader size="medium">
           <TableHead>
@@ -305,66 +233,8 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
         </Table>
       </TableContainer>
 
-      {/* Manual Check-in Dialog */}
-      <Dialog open={addOpen} onClose={() => setAddOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle style={{ fontFamily: "var(--font-heading)", fontWeight: "600" }}>Manual Check-In</DialogTitle>
-        <DialogContent style={{ display: "flex", flexDirection: "column", gap: "16px", paddingTop: "8px" }}>
-          {availableMembers.length === 0 ? (
-            <Alert severity="warning">All active students are already logged for this event.</Alert>
-          ) : (
-            <>
-              <FormControl fullWidth>
-                <InputLabel id="add-member-label">Select Student</InputLabel>
-                <Select
-                  labelId="add-member-label"
-                  value={addMemberId}
-                  label="Select Student"
-                  onChange={(e) => setAddMemberId(e.target.value)}
-                >
-                  {availableMembers.map(m => (
-                    <MenuItem key={m._id} value={m._id}>
-                      {m.lastName}, {m.firstName} ({m.studentId})
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
 
-              <FormControl fullWidth>
-                <InputLabel id="add-status-label">Status</InputLabel>
-                <Select
-                  labelId="add-status-label"
-                  value={addStatus}
-                  label="Status"
-                  onChange={(e) => setAddStatus(e.target.value)}
-                >
-                  <MenuItem value="Present">Present</MenuItem>
-                  <MenuItem value="Late">Late</MenuItem>
-                  <MenuItem value="Excused">Excused</MenuItem>
-                </Select>
-              </FormControl>
 
-              <TextField
-                label="Remarks / Adjustments"
-                value={addRemarks}
-                onChange={(e) => setAddRemarks(e.target.value)}
-                fullWidth
-              />
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAddOpen(false)} style={{ color: "var(--text-secondary)" }}>Cancel</Button>
-          <Button
-            onClick={handleSaveAdd}
-            disabled={!addMemberId}
-            style={{ color: "var(--accent-cyan)", fontWeight: "600" }}
-          >
-            Log Attendance
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Edit Record Dialog */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle style={{ fontFamily: "var(--font-heading)", fontWeight: "600" }}>
           Edit Attendance Record
@@ -391,23 +261,25 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
                 </Select>
               </FormControl>
 
-              <TextField
-                label="Check-In Time"
-                type="datetime-local"
-                value={editCheckIn}
-                onChange={(e) => setEditCheckIn(e.target.value)}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-              />
+              <div>
+                <InputLabel shrink style={{ fontSize: '14px', marginBottom: '4px' }}>Check-In Time</InputLabel>
+                <TextField
+                  type="datetime-local"
+                  value={editCheckIn || ""}
+                  onChange={(e) => setEditCheckIn(e.target.value)}
+                  fullWidth
+                />
+              </div>
 
-              <TextField
-                label="Check-Out Time"
-                type="datetime-local"
-                value={editCheckOut}
-                onChange={(e) => setEditCheckOut(e.target.value)}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-              />
+              <div>
+                <InputLabel shrink style={{ fontSize: '14px', marginBottom: '4px' }}>Check-Out Time</InputLabel>
+                <TextField
+                  type="datetime-local"
+                  value={editCheckOut || ""}
+                  onChange={(e) => setEditCheckOut(e.target.value)}
+                  fullWidth
+                />
+              </div>
 
               <TextField
                 label="Remarks"

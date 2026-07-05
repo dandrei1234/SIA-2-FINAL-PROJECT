@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import Navbar from "./components/Navbar";
 import AttendanceDashboard from "./pages/AttendanceDashboard";
-import MembersPlaceholder from "./pages/MembersPlaceholder";
-import EventsPlaceholder from "./pages/EventsPlaceholder";
 
 function App() {
   const [activeTab, setActiveTab] = useState("attendance");
@@ -11,10 +9,6 @@ function App() {
     switch (activeTab) {
       case "attendance":
         return <AttendanceDashboard />;
-      case "members":
-        return <MembersPlaceholder />;
-      case "events":
-        return <EventsPlaceholder />;
       default:
         return <AttendanceDashboard />;
     }

@@ -7,28 +7,6 @@ function Navbar({ activeTab, setActiveTab }) {
       label: "Attendance Management",
       author: "Luis Andrei Raymundo",
     },
-    {
-      id: "members",
-      label: "Member Registration",
-      author: "John Paul Dres",
-    },
-    {
-      id: "events",
-      label: "Events Management",
-      author: "Timothy Sancho Tabangin",
-    },
-    {
-      id: "sanctions",
-      label: "Sanction Payments",
-      author: "Ned Bryne Pinkihan",
-      disabled: true,
-    },
-    {
-      id: "admin",
-      label: "Admin Dashboard",
-      author: "Cecilio Liwag Jr.",
-      disabled: true,
-    },
   ];
 
   return (

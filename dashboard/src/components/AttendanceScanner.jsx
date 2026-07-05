@@ -25,37 +25,7 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
     }
   };
 
-  // Synthesize beep sound in browser using Web Audio API
-  const playBeep = (isSuccess) => {
-    try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
 
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-
-      if (isSuccess) {
-        // Success: Clean, high-pitched positive chime
-        oscillator.type = "sine";
-        oscillator.frequency.setValueAtTime(987.77, audioCtx.currentTime); // B5 note
-        gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        oscillator.start();
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-        oscillator.stop(audioCtx.currentTime + 0.15);
-      } else {
-        // Failure: Double low sawtooth buzzes
-        oscillator.type = "sawtooth";
-        oscillator.frequency.setValueAtTime(130.81, audioCtx.currentTime); // C3 note
-        gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
-        oscillator.start();
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
-        oscillator.stop(audioCtx.currentTime + 0.25);
-      }
-    } catch (e) {
-      console.warn("Audio Context not supported or blocked by user policy:", e);
-    }
-  };
 
   const handleMemberChange = (e) => {
     setSelectedMemberId(e.target.value);
@@ -74,7 +44,6 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
         success: false,
         message: "Please select an active event first from the dashboard panel.",
       });
-      playBeep(false);
       return;
     }
 
@@ -82,12 +51,12 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
     setScanResult(null);
     setLoading(true);
 
-    // Simulate physical scanning delay (800ms)
+
     setTimeout(async () => {
       try {
         let checkInTimeOverride = null;
         if (simulateLate) {
-          // Add 45 minutes to trigger the "Late" logic
+
           checkInTimeOverride = new Date(Date.now() + 45 * 60 * 1000).toISOString();
         }
 
@@ -108,7 +77,6 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
           message: res.data.message,
           data: res.data.attendance,
         });
-        playBeep(true);
         if (onScanSuccess) {
           onScanSuccess();
         }
@@ -118,7 +86,6 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
           success: false,
           message: error.response?.data?.message || "Internal server error. Code: 500",
         });
-        playBeep(false);
       } finally {
         setIsScanning(false);
         setLoading(false);
@@ -129,11 +96,11 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
   return (
     <div className="glass-panel" style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "20px" }}>
       <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "20px", fontWeight: "600", borderBottom: "1px solid var(--border-glow)", paddingBottom: "12px", textAlign: "left" }}>
-        Terminal Simulation
+        Record Attendance
       </h3>
 
       <form onSubmit={handleScan} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        {/* Check-In / Check-Out Selector */}
+
         <div style={{ display: "flex", gap: "10px" }}>
           <Button
             type="button"
@@ -173,7 +140,7 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
           </Button>
         </div>
 
-        {/* Member dropdown list */}
+
         <FormControl fullWidth style={{ marginTop: "8px" }}>
           <InputLabel id="student-select-label" style={{ color: "var(--text-secondary)" }}>Select Registered Student</InputLabel>
           <Select
@@ -200,7 +167,7 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
           <div style={{ height: "1px", background: "var(--border-glow)", width: "100%" }}></div>
         </div>
 
-        {/* Manual input ID */}
+
         <TextField
           label="Student ID (e.g. 2023-10001)"
           value={manualStudentId}
@@ -227,58 +194,6 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
           />
         )}
 
-        {/* Visual Scanner Area */}
-        <div
-          className={`glass-panel ${isScanning ? "pulse-scanning" : ""}`}
-          style={{
-            height: "180px",
-            position: "relative",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden",
-            background: isScanning ? "rgba(0, 242, 254, 0.02)" : "rgba(255,255,255,0.01)",
-            border: "1px dashed rgba(255, 255, 255, 0.15)",
-            borderRadius: "var(--border-radius-lg)",
-            marginTop: "10px",
-          }}
-        >
-          {isScanning && <div className="scanner-laser"></div>}
-          
-          <svg
-            width="64"
-            height="64"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke={isScanning ? "var(--accent-cyan)" : "var(--text-secondary)"}
-            strokeWidth="1.5"
-            style={{
-              transition: "var(--transition-smooth)",
-              filter: isScanning ? "drop-shadow(0 0 10px rgba(0,242,254,0.4))" : "none",
-              marginBottom: "12px"
-            }}
-          >
-            <path d="M12 2a10 10 0 0 1 10 10c0 2.2-.7 4.2-1.9 5.8" strokeLinecap="round"/>
-            <path d="M12 6a6 6 0 0 1 6 6c0 1.5-.6 2.8-1.5 3.8" strokeLinecap="round"/>
-            <circle cx="12" cy="12" r="2"/>
-            <path d="M2 12A10 10 0 0 1 12 2" strokeLinecap="round" strokeDasharray="3 3"/>
-            <path d="M2.1 17.8A10 10 0 0 0 12 22" strokeLinecap="round"/>
-          </svg>
-
-          <span
-            style={{
-              fontSize: "12px",
-              fontWeight: "600",
-              color: isScanning ? "var(--accent-cyan)" : "var(--text-secondary)",
-              letterSpacing: "1px",
-              textTransform: "uppercase"
-            }}
-          >
-            {isScanning ? "Reading RFID/QR Device..." : "Position card to tap"}
-          </span>
-        </div>
-
         <Button
           type="submit"
           variant="contained"
@@ -294,11 +209,11 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
             boxShadow: "var(--box-shadow-sm)",
           }}
         >
-          {loading ? <CircularProgress size={24} style={{ color: "#090b0f" }} /> : `Simulate Tap (${scanAction === "check-in" ? "IN" : "OUT"})`}
+          {loading ? <CircularProgress size={24} style={{ color: "#090b0f" }} /> : `Record Attendance (${scanAction === "check-in" ? "IN" : "OUT"})`}
         </Button>
       </form>
 
-      {/* Scan Results Display */}
+
       {scanResult && (
         <div
           className="glass-panel"

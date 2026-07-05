@@ -1,0 +1,15 @@
+{
+  "name": "school-org-ecosystem",
+  "version": "1.0.0",
+  "description": "Unified runner for School Organization Management Ecosystem MERN stack",
+  "main": "index.js",
+  "scripts": {
+    "setup": "npm install --prefix server && npm install --prefix dashboard",
+    "server": "npm run dev --prefix server",
+    "dashboard": "npm run dev --prefix dashboard",
+    "start": "npx concurrently \"npm run server\" \"npm run dashboard\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const attendanceSchema = new mongoose.Schema({
   member: {
     type: mongoose.Schema.Types.ObjectId,
@@ -29,7 +28,5 @@ const attendanceSchema = new mongoose.Schema({
   },
 });
 
-// A member can have only one attendance record per event
 attendanceSchema.index({ member: 1, event: 1 }, { unique: true });
-
 module.exports = mongoose.model("Attendance", attendanceSchema);

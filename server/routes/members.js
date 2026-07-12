@@ -31,7 +31,7 @@ router.get("/:identifier", async (req, res) => {
 
 // POST create new member
 router.post("/", async (req, res) => {
-  const { studentId, firstName, lastName, email, role, status } = req.body;
+  const { studentId, firstName, lastName, email, course, role, status } = req.body;
   
   if (!studentId || !firstName || !lastName || !email) {
     return res.status(400).json({ message: "Required fields are missing" });
@@ -48,6 +48,7 @@ router.post("/", async (req, res) => {
       firstName,
       lastName,
       email,
+      course,
       role,
       status,
     });

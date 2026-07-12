@@ -19,34 +19,54 @@ function AttendanceStats({ eventId, refreshTrigger }) {
     }
   };
 
-  if (!eventId || !stats) return null;
+  // Safe defaults if stats is not yet loaded
+  const data = stats || { presentCount: 0, absentCount: 0, checkInCount: 0 };
+  const total = data.presentCount + data.absentCount; // Assuming total is sum of all statuses
+  const attendanceRate = total > 0 ? Math.round((data.presentCount / total) * 100) : 0;
+
+  const CardStyle = {
+    background: "var(--bg-panel)",
+    borderRadius: "12px",
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+    minWidth: "140px",
+    border: "1px solid var(--border-glow)",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+  };
 
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", padding: "20px", background: "rgba(0, 0, 0, 0.02)", borderRadius: "var(--border-radius-md)", border: "1px solid var(--border-glow)", justifyContent: "space-around" }}>
-      <div style={{ textAlign: "center", minWidth: "100px" }}>
-        <p style={{ fontSize: "28px", fontWeight: "800", color: "var(--accent-cyan)", margin: 0 }}>{stats.checkInCount}</p>
-        <span style={{ fontSize: "12px", color: "var(--text-secondary)", textTransform: "uppercase", fontWeight: "600" }}>Total Logged</span>
-      </div>
-      
-      <div style={{ width: "1px", background: "var(--border-glow)", margin: "0 10px" }}></div>
-      
-      <div style={{ textAlign: "center", minWidth: "100px" }}>
-        <p style={{ fontSize: "28px", fontWeight: "800", color: "var(--accent-green)", margin: 0 }}>{stats.presentCount}</p>
-        <span style={{ fontSize: "12px", color: "var(--text-secondary)", textTransform: "uppercase", fontWeight: "600" }}>On Time</span>
-      </div>
-
-      <div style={{ width: "1px", background: "var(--border-glow)", margin: "0 10px" }}></div>
-      
-      <div style={{ textAlign: "center", minWidth: "100px" }}>
-        <p style={{ fontSize: "28px", fontWeight: "800", color: "var(--accent-yellow)", margin: 0 }}>{stats.lateCount}</p>
-        <span style={{ fontSize: "12px", color: "var(--text-secondary)", textTransform: "uppercase", fontWeight: "600" }}>Late</span>
+    <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", width: "100%" }}>
+      {/* Attendance Rate */}
+      <div style={{ ...CardStyle, flex: 1.5 }}>
+         <div style={{ position: "relative", display: "inline-flex", marginBottom: "12px" }}>
+            <svg width="80" height="80" viewBox="0 0 100 100">
+               <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border-glow)" strokeWidth="8" />
+               <circle cx="50" cy="50" r="40" fill="none" stroke="var(--accent-cyan)" strokeWidth="8" strokeDasharray="251.2" strokeDashoffset={251.2 - (251.2 * attendanceRate) / 100} strokeLinecap="round" transform="rotate(-90 50 50)" />
+            </svg>
+            <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, right: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+               <span style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)" }}>{attendanceRate}%</span>
+            </div>
+         </div>
+         <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "500" }}>Attendance Rate</span>
       </div>
 
-      <div style={{ width: "1px", background: "var(--border-glow)", margin: "0 10px" }}></div>
+      <div style={CardStyle}>
+        <p style={{ fontSize: "32px", fontWeight: "700", color: "var(--accent-green)", margin: "0 0 4px 0" }}>{data.presentCount}</p>
+        <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "500" }}>Present</span>
+      </div>
       
-      <div style={{ textAlign: "center", minWidth: "100px" }}>
-        <p style={{ fontSize: "28px", fontWeight: "800", color: "var(--accent-red)", margin: 0 }}>{stats.absentCount}</p>
-        <span style={{ fontSize: "12px", color: "var(--text-secondary)", textTransform: "uppercase", fontWeight: "600" }}>Absent</span>
+      <div style={CardStyle}>
+        <p style={{ fontSize: "32px", fontWeight: "700", color: "var(--accent-red)", margin: "0 0 4px 0" }}>{data.absentCount}</p>
+        <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "500" }}>Absent</span>
+      </div>
+
+      <div style={CardStyle}>
+        <p style={{ fontSize: "32px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 4px 0" }}>{total > 0 ? total : data.checkInCount}</p>
+        <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "500" }}>Total</span>
       </div>
     </div>
   );

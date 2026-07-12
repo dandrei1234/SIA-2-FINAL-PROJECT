@@ -44,16 +44,8 @@ router.post("/check-in", async (req, res) => {
       }
     }
 
-
     const actualCheckIn = checkInTime ? new Date(checkInTime) : new Date();
-    const eventStart = new Date(event.date);
-    const fifteenMinutes = 15 * 60 * 1000;
-    
     let calculatedStatus = "Present";
-    if (actualCheckIn.getTime() > (eventStart.getTime() + fifteenMinutes)) {
-      calculatedStatus = "Late";
-    }
-
 
     if (attendance) {
       attendance.checkIn = actualCheckIn;
@@ -163,25 +155,18 @@ router.get("/stats/:eventId", async (req, res) => {
     const records = await Attendance.find({ event: eventId });
     
     let presentCount = 0;
-    let lateCount = 0;
-    let excusedCount = 0;
-    
     records.forEach(r => {
       if (r.status === "Present") presentCount++;
-      else if (r.status === "Late") lateCount++;
-      else if (r.status === "Excused") excusedCount++;
     });
 
-    const checkInCount = presentCount + lateCount;
-    const absentCount = Math.max(0, totalMembers - checkInCount - excusedCount);
+    const checkInCount = presentCount;
+    const absentCount = Math.max(0, totalMembers - checkInCount);
     const attendanceRate = totalMembers > 0 ? Math.round((checkInCount / totalMembers) * 100) : 0;
 
     res.json({
       totalMembers,
       checkInCount,
       presentCount,
-      lateCount,
-      excusedCount,
       absentCount,
       attendanceRate
     });
@@ -190,6 +175,35 @@ router.get("/stats/:eventId", async (req, res) => {
   }
 });
 
+
+router.post("/", async (req, res) => {
+  try {
+    const { member, event, checkIn, checkOut, status, remarks } = req.body;
+    let attendance = await Attendance.findOne({ member, event });
+    
+    if (attendance) {
+      if (checkIn !== undefined) attendance.checkIn = checkIn;
+      if (checkOut !== undefined) attendance.checkOut = checkOut;
+      if (status !== undefined) attendance.status = status;
+      if (remarks !== undefined) attendance.remarks = remarks;
+    } else {
+      attendance = new Attendance({
+        member,
+        event,
+        checkIn: checkIn || null,
+        checkOut: checkOut || null,
+        status: status || "Absent",
+        remarks: remarks || ""
+      });
+    }
+    
+    await attendance.save();
+    const populated = await Attendance.findById(attendance._id).populate("member");
+    res.json(populated);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
 
 router.put("/:id", async (req, res) => {
   try {

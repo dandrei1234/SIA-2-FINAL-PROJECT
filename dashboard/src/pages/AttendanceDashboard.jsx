@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FormControl, InputLabel, Select, MenuItem, CircularProgress, Button, Alert, Tab, Tabs, Box } from "@mui/material";
+import { Dialog, DialogContent, DialogTitle, Button, Chip } from "@mui/material";
 import AttendanceScanner from "../components/AttendanceScanner";
 import AttendanceList from "../components/AttendanceList";
 import AttendanceStats from "../components/AttendanceStats";
@@ -8,193 +8,111 @@ import AttendanceStats from "../components/AttendanceStats";
 function AttendanceDashboard() {
   const [events, setEvents] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState("");
-  const [selectedEvent, setSelectedEvent] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [loadingEvents, setLoadingEvents] = useState(false);
-  
-  const [activeTab, setActiveTab] = useState(0);
-
-  const [showGuide, setShowGuide] = useState(true);
-
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   useEffect(() => {
     fetchEvents();
-  }, [refreshTrigger]);
+  }, []);
 
   const fetchEvents = async () => {
-    setLoadingEvents(true);
     try {
       const res = await axios.get("http://localhost:1337/api/events");
       setEvents(res.data);
-      if (res.data.length > 0 && !selectedEventId) {
+      if (res.data.length > 0) {
         setSelectedEventId(res.data[0]._id);
       }
     } catch (error) {
       console.error("Error fetching events:", error);
-    } finally {
-      setLoadingEvents(false);
     }
   };
-
-  useEffect(() => {
-    if (selectedEventId && events.length > 0) {
-      const ev = events.find(e => e._id === selectedEventId);
-      setSelectedEvent(ev);
-    } else {
-      setSelectedEvent(null);
-    }
-  }, [selectedEventId, events]);
 
   const handleScanSuccess = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
-
   return (
-    <div style={{ padding: "16px 24px 24px 24px", display: "flex", flexDirection: "column", gap: "20px", flex: 1, overflowY: "auto", height: "100vh" }}>
-      
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-glow)", paddingBottom: "12px" }}>
-        <div style={{ textAlign: "left" }}>
-          <h1 className="gradient-text" style={{ fontSize: "24px", margin: 0, fontWeight: "800", fontFamily: "var(--font-heading)" }}>
-            Attendance & Registry System
-          </h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "13px", marginTop: "2px" }}>
-            Manage checking in, student status logs, and turnouts easily.
-          </p>
+    <div style={{ display: "flex", flexDirection: "column", flex: 1, overflowY: "auto", height: "100vh", background: "var(--bg-space)", color: "var(--text-primary)" }}>
+
+      {/* Top Navigation Bar (Dashboard specific) */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 32px", borderBottom: "1px solid var(--border-glow)", background: "var(--bg-panel)" }}>
+        <div>
+          <h2 style={{ fontSize: "16px", margin: 0, fontWeight: "600" }}>Attendance</h2>
+          <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0 }}>Tuesday, July 7, 2026</p>
         </div>
 
 
       </div>
 
-      {showGuide && (
-        <Alert
-          severity="info"
-          style={{
-            backgroundColor: "rgba(0, 242, 254, 0.05)",
-            border: "1px solid var(--accent-cyan-glow)",
-            color: "var(--text-primary)",
-            borderRadius: "var(--border-radius-md)",
-            fontSize: "14px",
-            textAlign: "left"
-          }}
-          onClose={() => setShowGuide(false)}
-        >
-          <strong>Quick Start Guide:</strong>
-          <ol style={{ marginLeft: "20px", marginTop: "4px" }}>
-            <li>Select an event in the control panel below.</li>
-            <li>Use the <strong>Record Attendance</strong> tab to check in students, or go to <strong>Registry Logs</strong> to view or edit logs manually!</li>
-          </ol>
-        </Alert>
-      )}
-
-      <div className="glass-panel" style={{ padding: "16px", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "16px", textAlign: "left" }}>
-        <div style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
-          <FormControl size="small" style={{ minWidth: "240px" }}>
-            <InputLabel id="event-select-label" style={{ color: "var(--text-secondary)" }}>Choose Active Event</InputLabel>
-            <Select
-              labelId="event-select-label"
+      <div style={{ padding: "32px", display: "flex", flexDirection: "column", gap: "24px" }}>
+        {/* Header Section */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <h1 style={{ fontSize: "24px", margin: 0, fontWeight: "700" }}>Attendance</h1>
+            <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "4px", margin: 0 }}>
+              Monitor member attendance across all events
+            </p>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <select 
               value={selectedEventId}
-              label="Choose Active Event"
               onChange={(e) => setSelectedEventId(e.target.value)}
-              style={{ color: "var(--text-primary)", borderRadius: "var(--border-radius-md)" }}
+              style={{
+                background: "var(--bg-space)",
+                border: "1px solid var(--border-glow)",
+                color: "var(--text-primary)",
+                padding: "10px 16px",
+                borderRadius: "8px",
+                fontSize: "14px",
+                outline: "none",
+                cursor: "pointer",
+                minWidth: "200px"
+              }}
             >
-              {loadingEvents && events.length === 0 ? (
-                <MenuItem value="" disabled>Loading events...</MenuItem>
-              ) : events.length === 0 ? (
-                <MenuItem value="" disabled>No events available. Waiting for Events module.</MenuItem>
+              {events.length === 0 ? (
+                <option value="">No Events Available</option>
               ) : (
                 events.map(ev => (
-                  <MenuItem key={ev._id} value={ev._id}>
-                    {ev.title} ({new Date(ev.date).toLocaleDateString()})
-                  </MenuItem>
+                  <option key={ev._id} value={ev._id} style={{ background: "var(--bg-panel)", color: "var(--text-primary)" }}>
+                    {ev.title}
+                  </option>
                 ))
               )}
-            </Select>
-          </FormControl>
+            </select>
 
-          {selectedEvent && (
-            <div style={{ display: "flex", gap: "12px", fontSize: "14px", color: "var(--text-secondary)", flexWrap: "wrap" }}>
-              <div><strong>Venue:</strong> {selectedEvent.venue || "N/A"}</div>
-              <div><strong>Capacity:</strong> {selectedEvent.capacity || "Unlimited"}</div>
-              <div><strong>Status:</strong> <span style={{ color: "var(--accent-cyan)" }}>{selectedEvent.status}</span></div>
-            </div>
-          )}
+            <button 
+              onClick={() => setScannerOpen(true)}
+              disabled={!selectedEventId}
+              style={{ 
+                display: "flex", alignItems: "center", gap: "8px", 
+                background: "var(--accent-cyan)", color: "#fff", 
+                border: "none", padding: "10px 16px", borderRadius: "8px", 
+                fontWeight: "600", fontSize: "14px", cursor: selectedEventId ? "pointer" : "not-allowed",
+                boxShadow: "0 4px 14px var(--accent-cyan-glow)",
+                opacity: selectedEventId ? 1 : 0.5
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Mark Attendance
+            </button>
+          </div>
         </div>
+
+        {/* Stats Row */}
+        <AttendanceStats eventId={selectedEventId} refreshTrigger={refreshTrigger} />
+
+        {/* List Section */}
+        <AttendanceList eventId={selectedEventId} refreshTrigger={refreshTrigger} onRecordChange={handleScanSuccess} />
+
       </div>
 
-      {selectedEventId && (
-        <Box style={{ borderBottom: "1px solid var(--border-glow)", width: "100%" }}>
-          <Tabs
-            value={activeTab}
-            onChange={(e, val) => setActiveTab(val)}
-            TabIndicatorProps={{ style: { backgroundColor: "var(--accent-cyan)" } }}
-            style={{ minHeight: "auto" }}
-          >
-            <Tab
-              label="Record Attendance"
-              style={{
-                color: activeTab === 0 ? "var(--accent-cyan)" : "var(--text-secondary)",
-                textTransform: "none",
-                fontWeight: "600",
-                fontSize: "16px",
-                padding: "8px 16px",
-                minHeight: "auto"
-              }}
-            />
-            <Tab
-              label="Registry Logs"
-              style={{
-                color: activeTab === 1 ? "var(--accent-cyan)" : "var(--text-secondary)",
-                textTransform: "none",
-                fontWeight: "600",
-                fontSize: "16px",
-                padding: "8px 16px",
-                minHeight: "auto"
-              }}
-            />
-          </Tabs>
-        </Box>
-      )}
-
-      {selectedEventId ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px", flex: 1 }}>
-          {activeTab === 0 && (
-            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 2fr", gap: "20px", alignItems: "start" }}>
-              <AttendanceScanner
-                selectedEventId={selectedEventId}
-                onScanSuccess={handleScanSuccess}
-                refreshTrigger={refreshTrigger}
-              />
-              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                <div className="glass-panel" style={{ padding: "20px", textAlign: "left" }}>
-                  <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "18px", fontWeight: "600", borderBottom: "1px solid var(--border-glow)", paddingBottom: "10px", marginBottom: "16px" }}>
-                    Event Metrics & Status
-                  </h3>
-                  <AttendanceStats eventId={selectedEventId} refreshTrigger={refreshTrigger} />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 1 && (
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <AttendanceList
-                eventId={selectedEventId}
-                refreshTrigger={refreshTrigger}
-                onRecordChange={handleScanSuccess}
-              />
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="glass-panel" style={{ padding: "60px", color: "var(--text-secondary)" }}>
-          <h3>Welcome to the Attendance Ecosystem!</h3>
-          <p style={{ marginTop: "8px", fontSize: "16px" }}>
-            Waiting for an event to be created by the Events Management System...
-          </p>
-        </div>
-      )}
-
+      {/* Scanner Dialog */}
+      <Dialog open={scannerOpen} onClose={() => setScannerOpen(false)} maxWidth="sm" fullWidth PaperProps={{ style: { background: "var(--bg-panel-solid)", color: "var(--text-primary)" } }}>
+        <DialogTitle style={{ borderBottom: "1px solid var(--border-glow)", paddingBottom: "16px" }}>Record Attendance</DialogTitle>
+        <DialogContent style={{ paddingTop: "24px", paddingBottom: "24px" }}>
+          <AttendanceScanner selectedEventId={selectedEventId} onScanSuccess={handleScanSuccess} refreshTrigger={refreshTrigger} />
+        </DialogContent>
+      </Dialog>
 
     </div>
   );

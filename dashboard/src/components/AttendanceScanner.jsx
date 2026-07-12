@@ -7,7 +7,6 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
   const [selectedMemberId, setSelectedMemberId] = useState("");
   const [manualStudentId, setManualStudentId] = useState("");
   const [scanAction, setScanAction] = useState("check-in");
-  const [simulateLate, setSimulateLate] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -54,21 +53,11 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
 
     setTimeout(async () => {
       try {
-        let checkInTimeOverride = null;
-        if (simulateLate) {
-
-          checkInTimeOverride = new Date(Date.now() + 45 * 60 * 1000).toISOString();
-        }
-
         const endpoint = scanAction === "check-in" ? "check-in" : "check-out";
         const payload = {
           studentId: idToScan.trim(),
           eventId: selectedEventId,
         };
-
-        if (scanAction === "check-in" && checkInTimeOverride) {
-          payload.checkInTime = checkInTimeOverride;
-        }
 
         const res = await axios.post(`http://localhost:1337/api/attendance/${endpoint}`, payload);
         
@@ -169,7 +158,7 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
 
 
         <TextField
-          label="Student ID (e.g. 2023-10001)"
+          label="Student ID (e.g. 40374230)"
           value={manualStudentId}
           onChange={(e) => setManualStudentId(e.target.value)}
           variant="outlined"
@@ -180,19 +169,6 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
             borderRadius: "var(--border-radius-md)",
           }}
         />
-
-        {scanAction === "check-in" && (
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={simulateLate}
-                onChange={(e) => setSimulateLate(e.target.checked)}
-                style={{ color: "var(--accent-cyan)" }}
-              />
-            }
-            label={<span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Simulate Late check-in (+45 mins event offset)</span>}
-          />
-        )}
 
         <Button
           type="submit"

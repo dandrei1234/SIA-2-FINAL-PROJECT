@@ -4,8 +4,13 @@ function Navbar({ activeTab, setActiveTab }) {
   const navItems = [
     {
       id: "attendance",
-      label: "Attendance Management",
-      author: "Luis Andrei Raymundo",
+      label: "Attendance",
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 11l3 3L22 4"></path>
+          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+        </svg>
+      )
     },
   ];
 
@@ -13,84 +18,90 @@ function Navbar({ activeTab, setActiveTab }) {
     <div
       className="glass-panel"
       style={{
-        width: "300px",
-        minWidth: "300px",
-        height: "calc(100vh - 32px)",
-        margin: "16px",
+        width: "260px",
+        minWidth: "260px",
+        height: "100vh",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        padding: "24px 16px",
+        padding: "24px 0",
         position: "sticky",
-        top: "16px",
+        top: "0",
+        background: "var(--bg-panel-solid)",
+        borderRight: "1px solid var(--border-glow)",
+        borderRadius: "0",
+        margin: "0",
       }}
     >
       <div>
         {/* Header Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "32px", padding: "0 8px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "40px", padding: "0 24px" }}>
           <div style={{
-            width: "44px",
-            height: "44px",
-            borderRadius: "10px",
-            background: "var(--accent-cyan)",
+            width: "36px",
+            height: "36px",
+            borderRadius: "8px",
+            background: "#ffffff",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)"
           }}>
-            <span style={{ fontSize: "22px", fontWeight: "800", color: "#ffffff", fontFamily: "var(--font-heading)" }}>S</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--bg-panel-solid)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
           </div>
           <div>
-            <h2 style={{ fontSize: "18px", margin: 0, fontWeight: "700", textAlign: "left" }}>SchoolOrg</h2>
-            <p style={{ fontSize: "13px", color: "var(--text-muted)", margin: 0, textAlign: "left" }}>Ecosystem Hub</p>
+            <h2 style={{ fontSize: "16px", margin: 0, fontWeight: "700", color: "var(--text-primary)", letterSpacing: "0.5px" }}>SchoolOrg</h2>
           </div>
         </div>
 
+        {/* MAIN Section Header */}
+        <div style={{ padding: "16px 24px", color: "var(--text-secondary)", fontSize: "12px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "1px", borderTop: "1px solid var(--border-glow)" }}>
+          <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "600", letterSpacing: "1px" }}>MAIN</span>
+        </div>
+
         {/* Nav list */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px", padding: "0 12px" }}>
           {navItems.map((item) => {
-            const isActive = activeTab === item.id;
+            const isActive = activeTab === item.id || true; // Force active since it's the only tab
             return (
               <button
                 key={item.id}
-                onClick={() => !item.disabled && setActiveTab(item.id)}
-                disabled={item.disabled}
+                onClick={() => setActiveTab(item.id)}
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  padding: "14px 16px",
-                  borderRadius: "var(--border-radius-md)",
+                  gap: "12px",
+                  padding: "12px 16px",
+                  borderRadius: "8px",
                   border: "none",
-                  background: isActive ? "rgba(2, 132, 199, 0.08)" : "transparent",
-                  color: isActive ? "var(--accent-cyan)" : item.disabled ? "var(--text-muted)" : "var(--text-secondary)",
-                  cursor: item.disabled ? "not-allowed" : "pointer",
+                  background: isActive ? "var(--accent-cyan-glow)" : "transparent",
+                  color: isActive ? "var(--accent-cyan)" : "var(--text-secondary)",
+                  cursor: "pointer",
                   textAlign: "left",
-                  fontSize: "16px",
+                  fontSize: "14px",
                   fontWeight: isActive ? "600" : "500",
                   transition: "var(--transition-smooth)",
-                  borderLeft: isActive ? "4px solid var(--accent-cyan)" : "4px solid transparent",
-                  opacity: item.disabled ? 0.5 : 1,
                   outline: "none",
+                  borderLeft: isActive ? "3px solid var(--accent-cyan)" : "3px solid transparent",
                 }}
                 onMouseEnter={(e) => {
-                  if (!isActive && !item.disabled) {
-                    e.currentTarget.style.background = "rgba(0, 0, 0, 0.02)";
+                  if (!isActive) {
+                    e.currentTarget.style.background = "var(--border-glow)";
                     e.currentTarget.style.color = "var(--text-primary)";
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (!isActive && !item.disabled) {
+                  if (!isActive) {
                     e.currentTarget.style.background = "transparent";
                     e.currentTarget.style.color = "var(--text-secondary)";
                   }
                 }}
               >
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span>{item.label}</span>
-                  <span style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
-                    By: {item.author} {item.disabled && "(Integration Pend.)"}
-                  </span>
+                <div style={{ color: isActive ? "var(--accent-cyan)" : "var(--text-secondary)", display: "flex", alignItems: "center" }}>
+                  {item.icon}
                 </div>
+                <span style={{ color: isActive ? "var(--accent-cyan)" : "var(--text-secondary)" }}>{item.label}</span>
               </button>
             );
           })}
@@ -98,13 +109,31 @@ function Navbar({ activeTab, setActiveTab }) {
       </div>
 
       {/* Footer Info */}
-      <div className="glass-panel" style={{ padding: "14px", borderRadius: "var(--border-radius-md)", background: "rgba(0, 0, 0, 0.01)" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>STUDENT DEVELOPER</span>
-          <span style={{ fontSize: "15px", fontWeight: "600", color: "var(--text-primary)" }}>Luis Andrei Raymundo</span>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "4px" }}>
-            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--accent-green)" }}></span>
-            <span style={{ fontSize: "11px", color: "var(--accent-green)" }}>Connected</span>
+      <div style={{ padding: "0 24px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px 0", borderTop: "1px solid var(--border-glow)" }}>
+          <div style={{
+            width: "32px",
+            height: "32px",
+            borderRadius: "50%",
+            background: "#ffffff",
+            color: "var(--bg-panel-solid)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "12px",
+            fontWeight: "700"
+          }}>
+            CA
+          </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>Student</span>
+            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>Super Admin</span>
+          </div>
+          <div style={{ marginLeft: "auto", color: "var(--text-muted)", cursor: "pointer" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"></path>
+            </svg>
           </div>
         </div>
       </div>

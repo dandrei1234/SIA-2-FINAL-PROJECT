@@ -1,33 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Clean Light Theme Color System */
-  --bg-space: #f8fafc;
-  --bg-panel: #ffffff;
-  --bg-panel-hover: #f1f5f9;
+  /* Light Dashboard Theme */
+  --bg-space: #f4f5f7; /* Matching the exact slightly warmer gray background */
+  --bg-panel: #ffffff; /* White panels */
+  --bg-panel-hover: #f9fafb;
   --bg-panel-solid: #ffffff;
-  --border-glow: #e2e8f0;
-  --border-glow-focus: #3b82f6;
+  --border-glow: rgba(0, 0, 0, 0.08); /* Subtle dark borders */
+  --border-glow-focus: #7b1113; /* Rich Maroon focus */
   
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --text-primary: #111827; /* Very dark text */
+  --text-secondary: #4b5563; /* Medium dark text */
+  --text-muted: #9ca3af; /* Lighter text for labels */
   
   /* Brand/Status Accents */
-  --accent-cyan: #0284c7; /* Sky blue */
-  --accent-cyan-glow: rgba(2, 132, 199, 0.1);
+  --accent-cyan: #7b1113; /* Exact rich Maroon from screenshot */
+  --accent-cyan-glow: rgba(123, 17, 19, 0.1);
   
-  --accent-violet: #6366f1; /* Indigo */
-  --accent-violet-glow: rgba(99, 102, 241, 0.1);
+  --accent-violet: #8b5cf6;
+  --accent-violet-glow: rgba(139, 92, 246, 0.1);
   
-  --accent-green: #16a34a;
-  --accent-green-glow: rgba(22, 163, 74, 0.1);
+  --accent-green: #10b981;
+  --accent-green-glow: rgba(16, 185, 129, 0.1);
   
-  --accent-yellow: #d97706;
-  --accent-yellow-glow: rgba(217, 119, 6, 0.1);
+  --accent-yellow: #f59e0b;
+  --accent-yellow-glow: rgba(245, 158, 11, 0.1);
   
-  --accent-red: #dc2626;
-  --accent-red-glow: rgba(220, 38, 38, 0.1);
+  --accent-red: #7b1113; /* Using maroon for main red as well */
+  --accent-red-glow: rgba(123, 17, 19, 0.1);
   
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-heading: 'Inter', sans-serif;
@@ -111,7 +111,7 @@ body {
 .MuiTableHead-root .MuiTableCell-root {
   color: var(--text-primary) !important;
   font-weight: 600 !important;
-  background-color: #f8fafc !important;
+  background-color: var(--bg-panel-solid) !important;
 }
 
 .MuiTypography-root {

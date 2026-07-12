@@ -6,6 +6,7 @@ const memberSchema = new mongoose.Schema({
     required: true,
     unique: true,
     trim: true,
+    match: [/^\d{8}$/, "Student ID must be an 8-digit number"],
   },
   firstName: {
     type: String,
@@ -20,6 +21,10 @@ const memberSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
+    trim: true,
+  },
+  course: {
+    type: String,
     trim: true,
   },
   role: {

@@ -19,7 +19,7 @@ router.post("/check-in", async (req, res) => {
       return res.status(404).json({ message: `Student with ID ${studentId} not found` });
     }
 
-    if (member.status === "Inactive") {
+    if (member.membershipStatus === "Inactive") {
       return res.status(400).json({ message: `Student ${member.firstName} is Inactive and cannot check in` });
     }
 
@@ -29,7 +29,7 @@ router.post("/check-in", async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (event.status === "Cancelled") {
+    if (event.status === "cancelled") {
       return res.status(400).json({ message: "This event has been cancelled" });
     }
 
@@ -149,7 +149,7 @@ router.get("/stats/:eventId", async (req, res) => {
     const eventId = req.params.eventId;
     
 
-    const totalMembers = await Member.countDocuments({ status: "Active" });
+    const totalMembers = await Member.countDocuments({ membershipStatus: "Active" });
     
 
     const records = await Attendance.find({ event: eventId });

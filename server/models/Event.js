@@ -1,35 +1,70 @@
-const mongoose = require("mongoose");
-
+const mongoose = require('mongoose');
+ 
+const attendanceSchema = new mongoose.Schema({
+  studentId: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  studentName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    trim: true
+  },
+  checkedInAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+ 
 const eventSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
-    trim: true,
+    trim: true
   },
   description: {
     type: String,
-    trim: true,
+    trim: true
   },
-  date: {
+  schedule: {
     type: Date,
-    required: true,
+    required: true
   },
   venue: {
     type: String,
-    trim: true,
+    required: true,
+    trim: true
   },
-  capacity: {
-    type: Number,
+  type: {
+    type: String,
+    required: true,
+    enum: ['seminar', 'webinar', 'workshop', 'meeting', 'social', 'sports', 'other'],
+    default: 'seminar'
   },
   status: {
     type: String,
-    enum: ["Upcoming", "Ongoing", "Completed", "Cancelled"],
-    default: "Upcoming",
+    required: true,
+    enum: ['cancelled', 'active', 'postponed', 'completed', 'drafted'],
+    default: 'drafted'
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  organizingClub: {
+    type: String,
+    required: true,
+    trim: true
   },
+  capacity: {
+    type: Number,
+    default: 100
+  },
+  attendanceList: [attendanceSchema]
+}, {
+  timestamps: true,
+  collection: 'events-data'
 });
-
-module.exports = mongoose.model("Event", eventSchema);
+ 
+module.exports = mongoose.model('Event', eventSchema);

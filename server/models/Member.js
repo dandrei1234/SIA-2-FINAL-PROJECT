@@ -1,46 +1,68 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const memberSchema = new mongoose.Schema({
-  studentId: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-    match: [/^\d{8}$/, "Student ID must be an 8-digit number"],
+const memberSchema = new mongoose.Schema(
+  {
+    studentId: {
+      type: String,
+      required: [true, 'Student ID is required'],
+      unique: true,
+      trim: true,
+    },
+    firstName: {
+      type: String,
+      required: [true, 'First Name is required'],
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      required: [true, 'Last Name is required'],
+      trim: true,
+    },
+    middleName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    yearLevel: {
+      type: Number,
+      required: [true, 'Year Level is required'],
+      min: [1, 'Year Level must be at least 1'],
+      max: [6, 'Year Level cannot exceed 6'],
+    },
+    course: {
+      type: String,
+      required: [true, 'Course is required'],
+      trim: true,
+    },
+    organizationId: {
+      type: String,
+      required: [true, 'Organization ID is required'],
+      trim: true,
+    },
+    membershipFeeStatus: {
+      type: String,
+      enum: {
+        values: ['Paid', 'Unpaid'],
+        message: '{VALUE} is not a valid membership fee status',
+      },
+      default: 'Unpaid',
+    },
+    membershipStatus: {
+      type: String,
+      enum: {
+        values: ['Pending', 'Active', 'Inactive'],
+        message: '{VALUE} is not a valid membership status',
+      },
+      default: 'Pending',
+    },
+    dateRegistered: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  firstName: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  lastName: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  course: {
-    type: String,
-    trim: true,
-  },
-  role: {
-    type: String,
-    enum: ["Student", "Officer", "Faculty"],
-    default: "Student",
-  },
-  status: {
-    type: String,
-    enum: ["Active", "Inactive"],
-    default: "Active",
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
-module.exports = mongoose.model("Member", memberSchema);
+module.exports = mongoose.model('Member', memberSchema, 'members');

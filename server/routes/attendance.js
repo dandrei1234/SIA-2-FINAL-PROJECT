@@ -156,15 +156,11 @@ router.get("/stats/:eventId", async (req, res) => {
     
 
     const records = await Attendance.find({ event: eventId });
-    
-    let presentCount = 0;
-    records.forEach(r => {
-      if (r.status === "Present") presentCount++;
-    });
+    const checkInCount = records.length;
+    const presentCount = records.filter(r => r.status === "Present").length;
+    const absentCount = records.filter(r => r.status === "Absent").length;
 
-    const checkInCount = presentCount;
-    const absentCount = Math.max(0, totalMembers - checkInCount);
-    const attendanceRate = totalMembers > 0 ? Math.round((checkInCount / totalMembers) * 100) : 0;
+    const attendanceRate = totalMembers > 0 ? Math.round((presentCount / totalMembers) * 100) : 0;
 
     res.json({
       totalMembers,
@@ -203,7 +199,7 @@ router.post("/", async (req, res) => {
         event,
         checkIn: checkIn || null,
         checkOut: checkOut || null,
-        status: status || "Absent",
+        status: status || "-",
         remarks: remarks || ""
       });
     }

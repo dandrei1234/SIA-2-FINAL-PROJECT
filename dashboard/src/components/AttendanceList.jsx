@@ -33,7 +33,7 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
           event: record ? record.event : { _id: eventId },
           checkIn: record ? record.checkIn : null,
           checkOut: record ? record.checkOut : null,
-          status: record ? record.status : "Absent",
+          status: record ? record.status : "-",
           remarks: record ? record.remarks : "",
           isVirtual: !record
         };

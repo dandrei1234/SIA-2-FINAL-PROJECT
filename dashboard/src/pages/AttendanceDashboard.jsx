@@ -17,7 +17,7 @@ function AttendanceDashboard() {
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get("http://localhost:1337/api/events");
+      const res = await axios.get(`http://${window.location.hostname}:1337/api/events`);
       setEvents(res.data);
       if (res.data.length > 0) {
         setSelectedEventId(res.data[0]._id);

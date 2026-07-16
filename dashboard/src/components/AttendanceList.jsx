@@ -16,12 +16,12 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
   const fetchRecords = async () => {
     setLoading(true);
     try {
-      const membersRes = await axios.get(`http://localhost:1337/api/members`);
+      const membersRes = await axios.get(`http://${window.location.hostname}:1337/api/members`);
       const allMembers = membersRes.data;
 
       let attendanceRecords = [];
       if (eventId) {
-        const attRes = await axios.get(`http://localhost:1337/api/attendance/event/${eventId}`);
+        const attRes = await axios.get(`http://${window.location.hostname}:1337/api/attendance/event/${eventId}`);
         attendanceRecords = attRes.data;
       }
 
@@ -60,7 +60,7 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
         checkIn: newStatus === 'Present' && !record.checkIn ? new Date() : record.checkIn
       };
 
-      await axios.post(`http://localhost:1337/api/attendance`, payload);
+      await axios.post(`http://${window.location.hostname}:1337/api/attendance`, payload);
       fetchRecords();
       if (onRecordChange) onRecordChange();
     } catch (error) {

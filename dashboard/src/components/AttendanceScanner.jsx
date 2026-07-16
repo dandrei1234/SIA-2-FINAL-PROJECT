@@ -17,7 +17,7 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
 
   const fetchMembers = async () => {
     try {
-      const res = await axios.get("http://localhost:1337/api/members");
+      const res = await axios.get(`http://${window.location.hostname}:1337/api/members`);
       setMembers(res.data);
     } catch (error) {
       console.error("Error fetching members for scanner:", error);
@@ -59,7 +59,7 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
           eventId: selectedEventId,
         };
 
-        const res = await axios.post(`http://localhost:1337/api/attendance/${endpoint}`, payload);
+        const res = await axios.post(`http://${window.location.hostname}:1337/api/attendance/${endpoint}`, payload);
         
         setScanResult({
           success: true,

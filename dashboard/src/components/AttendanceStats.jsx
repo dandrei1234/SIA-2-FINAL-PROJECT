@@ -12,7 +12,7 @@ function AttendanceStats({ eventId, refreshTrigger }) {
 
   const fetchStats = async () => {
     try {
-      const res = await axios.get(`http://localhost:1337/api/attendance/stats/${eventId}`);
+      const res = await axios.get(`http://${window.location.hostname}:1337/api/attendance/stats/${eventId}`);
       setStats(res.data);
     } catch (error) {
       console.error("Error fetching stats:", error);

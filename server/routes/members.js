@@ -12,6 +12,21 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET members for a specific event based on organization
+router.get("/event/:eventId", async (req, res) => {
+  try {
+    const Event = require("../models/Event");
+    const event = await Event.findById(req.params.eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    const members = await Member.find({ organizationId: event.organizingClub }).sort({ lastName: 1, firstName: 1 });
+    res.json(members);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // GET member by ID or Student ID
 router.get("/:identifier", async (req, res) => {
   try {

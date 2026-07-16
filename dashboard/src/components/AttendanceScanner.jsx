@@ -14,11 +14,15 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
 
   useEffect(() => {
     fetchMembers();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, selectedEventId]);
 
   const fetchMembers = async () => {
     try {
-      const res = await axios.get(`${API_URL}/members`);
+      let url = `${API_URL}/members`;
+      if (selectedEventId) {
+        url = `${API_URL}/members/event/${selectedEventId}`;
+      }
+      const res = await axios.get(url);
       setMembers(res.data);
     } catch (error) {
       console.error("Error fetching members for scanner:", error);

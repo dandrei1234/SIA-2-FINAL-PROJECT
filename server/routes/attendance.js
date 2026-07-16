@@ -108,8 +108,12 @@ router.get("/stats/:eventId", async (req, res) => {
   try {
     const eventId = req.params.eventId;
     
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
 
-    const totalMembers = await Member.countDocuments();
+    const totalMembers = await Member.countDocuments({ organizationId: event.organizingClub });
     
 
     const records = await Attendance.find({ event: eventId });

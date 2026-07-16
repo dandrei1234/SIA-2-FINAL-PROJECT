@@ -17,8 +17,14 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
   const fetchRecords = async () => {
     setLoading(true);
     try {
-      const membersRes = await axios.get(`${API_URL}/members`);
-      const allMembers = membersRes.data;
+      let allMembers = [];
+      if (eventId) {
+        const membersRes = await axios.get(`${API_URL}/members/event/${eventId}`);
+        allMembers = membersRes.data;
+      } else {
+        const membersRes = await axios.get(`${API_URL}/members`);
+        allMembers = membersRes.data;
+      }
 
       let attendanceRecords = [];
       if (eventId) {

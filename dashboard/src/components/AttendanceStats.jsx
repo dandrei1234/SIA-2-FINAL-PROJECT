@@ -21,9 +21,9 @@ function AttendanceStats({ eventId, refreshTrigger }) {
   };
 
   // Safe defaults if stats is not yet loaded
-  const data = stats || { presentCount: 0, absentCount: 0, checkInCount: 0 };
-  const total = data.presentCount + data.absentCount; // Assuming total is sum of all statuses
-  const attendanceRate = total > 0 ? Math.round((data.presentCount / total) * 100) : 0;
+  const data = stats || { presentCount: 0, absentCount: 0, checkInCount: 0, totalMembers: 0, attendanceRate: 0 };
+  const total = data.totalMembers;
+  const attendanceRate = data.attendanceRate;
 
   const CardStyle = {
     background: "var(--bg-panel)",
@@ -66,7 +66,7 @@ function AttendanceStats({ eventId, refreshTrigger }) {
       </div>
 
       <div style={CardStyle}>
-        <p style={{ fontSize: "32px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 4px 0" }}>{total > 0 ? total : data.checkInCount}</p>
+        <p style={{ fontSize: "32px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 4px 0" }}>{total}</p>
         <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "500" }}>Total</span>
       </div>
     </div>

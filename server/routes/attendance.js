@@ -53,6 +53,8 @@ router.post("/check-in", async (req, res) => {
     } else {
       attendance = new Attendance({
         member: member._id,
+        memberName: `${member.firstName} ${member.lastName}`,
+        studentId: member.studentId,
         event: eventId,
         checkIn: actualCheckIn,
         status: calculatedStatus,
@@ -150,7 +152,7 @@ router.get("/stats/:eventId", async (req, res) => {
     const eventId = req.params.eventId;
     
 
-    const totalMembers = await Member.countDocuments({ membershipStatus: "Active" });
+    const totalMembers = await Member.countDocuments();
     
 
     const records = await Attendance.find({ event: eventId });
@@ -187,9 +189,17 @@ router.post("/", async (req, res) => {
       if (checkOut !== undefined) attendance.checkOut = checkOut;
       if (status !== undefined) attendance.status = status;
       if (remarks !== undefined) attendance.remarks = remarks;
+      
+      const memObj = await Member.findById(member);
+      attendance.memberName = memObj ? `${memObj.firstName} ${memObj.lastName}` : "Unknown";
+      attendance.studentId = memObj ? memObj.studentId : "Unknown";
+
     } else {
+      const memObj = await Member.findById(member);
       attendance = new Attendance({
         member,
+        memberName: memObj ? `${memObj.firstName} ${memObj.lastName}` : "Unknown",
+        studentId: memObj ? memObj.studentId : "Unknown",
         event,
         checkIn: checkIn || null,
         checkOut: checkOut || null,

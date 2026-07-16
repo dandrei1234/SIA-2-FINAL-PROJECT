@@ -18,7 +18,7 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
   const fetchMembers = async () => {
     try {
       const res = await axios.get("http://localhost:1337/api/members");
-      setMembers(res.data.filter(m => m.membershipStatus === "Active"));
+      setMembers(res.data);
     } catch (error) {
       console.error("Error fetching members for scanner:", error);
     }
@@ -53,7 +53,7 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
 
     setTimeout(async () => {
       try {
-        const endpoint = scanAction === "check-in" ? "check-in" : "check-out";
+        const endpoint = "check-in";
         const payload = {
           studentId: idToScan.trim(),
           eventId: selectedEventId,
@@ -89,46 +89,6 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
       </h3>
 
       <form onSubmit={handleScan} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-
-        <div style={{ display: "flex", gap: "10px" }}>
-          <Button
-            type="button"
-            onClick={() => setScanAction("check-in")}
-            style={{
-              flex: 1,
-              padding: "12px",
-              borderRadius: "var(--border-radius-md)",
-              border: scanAction === "check-in" ? "1px solid var(--accent-cyan)" : "1px solid var(--border-glow)",
-              background: scanAction === "check-in" ? "rgba(0, 242, 254, 0.05)" : "transparent",
-              color: scanAction === "check-in" ? "var(--accent-cyan)" : "var(--text-secondary)",
-              fontWeight: "600",
-              textTransform: "none",
-              fontSize: "15px",
-              transition: "var(--transition-smooth)"
-            }}
-          >
-            Check-In
-          </Button>
-          <Button
-            type="button"
-            onClick={() => setScanAction("check-out")}
-            style={{
-              flex: 1,
-              padding: "12px",
-              borderRadius: "var(--border-radius-md)",
-              border: scanAction === "check-out" ? "1px solid var(--accent-cyan)" : "1px solid var(--border-glow)",
-              background: scanAction === "check-out" ? "rgba(0, 242, 254, 0.05)" : "transparent",
-              color: scanAction === "check-out" ? "var(--accent-cyan)" : "var(--text-secondary)",
-              fontWeight: "600",
-              textTransform: "none",
-              fontSize: "15px",
-              transition: "var(--transition-smooth)"
-            }}
-          >
-            Check-Out
-          </Button>
-        </div>
-
 
         <FormControl fullWidth style={{ marginTop: "8px" }}>
           <InputLabel id="student-select-label" style={{ color: "var(--text-secondary)" }}>Select Registered Student</InputLabel>
@@ -185,7 +145,7 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
             boxShadow: "var(--box-shadow-sm)",
           }}
         >
-          {loading ? <CircularProgress size={24} style={{ color: "#090b0f" }} /> : `Record Attendance (${scanAction === "check-in" ? "IN" : "OUT"})`}
+          {loading ? <CircularProgress size={24} style={{ color: "#090b0f" }} /> : `Record Attendance`}
         </Button>
       </form>
 
@@ -247,14 +207,7 @@ function AttendanceScanner({ selectedEventId, onScanSuccess, refreshTrigger }) {
               <strong style={{ color: "var(--text-primary)" }}>
                 {new Date(scanResult.data.checkIn).toLocaleTimeString()}
               </strong>
-              {scanResult.data.checkOut && (
-                <>
-                  <span>Checked Out:</span>
-                  <strong style={{ color: "var(--text-primary)" }}>
-                    {new Date(scanResult.data.checkOut).toLocaleTimeString()}
-                  </strong>
-                </>
-              )}
+
             </div>
           )}
         </div>

@@ -5,6 +5,12 @@ const attendanceSchema = new mongoose.Schema({
     ref: "Member",
     required: true,
   },
+  memberName: {
+    type: String,
+  },
+  studentId: {
+    type: String,
+  },
   event: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Event",

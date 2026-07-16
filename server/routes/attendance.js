@@ -78,49 +78,6 @@ router.post("/check-in", async (req, res) => {
 });
 
 
-router.post("/check-out", async (req, res) => {
-  const { studentId, eventId, checkOutTime } = req.body;
-
-  if (!studentId || !eventId) {
-    return res.status(400).json({ message: "Student ID and Event ID are required" });
-  }
-
-  try {
-
-    const member = await Member.findOne({ studentId });
-    if (!member) {
-      return res.status(404).json({ message: `Student with ID ${studentId} not found` });
-    }
-
-
-    const attendance = await Attendance.findOne({ member: member._id, event: eventId });
-    if (!attendance || !attendance.checkIn) {
-      return res.status(400).json({ 
-        message: `No active check-in found for ${member.firstName} ${member.lastName} in this event. Check-in first.`
-      });
-    }
-
-    if (attendance.checkOut) {
-      return res.status(400).json({ 
-        message: `${member.firstName} has already checked out at ${new Date(attendance.checkOut).toLocaleTimeString()}`
-      });
-    }
-
-
-    attendance.checkOut = checkOutTime ? new Date(checkOutTime) : new Date();
-    await attendance.save();
-
-    const populated = await Attendance.findById(attendance._id).populate("member");
-
-    res.json({
-      message: `Checked out successfully: ${member.firstName} ${member.lastName}`,
-      attendance: populated
-    });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
 
 
 router.get("/event/:eventId", async (req, res) => {
@@ -177,12 +134,11 @@ router.get("/stats/:eventId", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { member, event, checkIn, checkOut, status, remarks } = req.body;
+    const { member, event, checkIn, status, remarks } = req.body;
     let attendance = await Attendance.findOne({ member, event });
     
     if (attendance) {
       if (checkIn !== undefined) attendance.checkIn = checkIn;
-      if (checkOut !== undefined) attendance.checkOut = checkOut;
       if (status !== undefined) attendance.status = status;
       if (remarks !== undefined) attendance.remarks = remarks;
       
@@ -198,7 +154,6 @@ router.post("/", async (req, res) => {
         studentId: memObj ? memObj.studentId : "Unknown",
         event,
         checkIn: checkIn || null,
-        checkOut: checkOut || null,
         status: status || "-",
         remarks: remarks || ""
       });
@@ -214,7 +169,7 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   try {
-    const { checkIn, checkOut, status, remarks } = req.body;
+    const { checkIn, status, remarks } = req.body;
     
     const attendance = await Attendance.findById(req.params.id);
     if (!attendance) {
@@ -222,7 +177,6 @@ router.put("/:id", async (req, res) => {
     }
 
     if (checkIn !== undefined) attendance.checkIn = checkIn;
-    if (checkOut !== undefined) attendance.checkOut = checkOut;
     if (status !== undefined) attendance.status = status;
     if (remarks !== undefined) attendance.remarks = remarks;
 

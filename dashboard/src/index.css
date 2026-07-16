@@ -159,3 +159,109 @@ body {
   -webkit-text-fill-color: initial;
   color: var(--text-primary);
 }
+
+/* ===================== */
+/*  MOBILE RESPONSIVE    */
+/* ===================== */
+
+/* Sidebar overlay for mobile */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 99;
+}
+
+.sidebar-overlay.open {
+  display: block;
+}
+
+/* Hamburger button */
+.hamburger-btn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: var(--text-primary);
+  border-radius: 6px;
+}
+
+.hamburger-btn:hover {
+  background: var(--border-glow);
+}
+
+@media (max-width: 768px) {
+  .hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Completely remove sidebar from layout on mobile */
+  .mobile-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: -320px !important;
+    z-index: 100 !important;
+    transition: left 0.3s ease !important;
+    height: 100vh !important;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.15) !important;
+    width: 300px !important;
+    min-width: 300px !important;
+  }
+
+  /* Slide in when open */
+  .mobile-sidebar.open {
+    left: 0 !important;
+  }
+
+  /* Stack header controls on small screens */
+  .dashboard-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .dashboard-controls {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .dashboard-controls select,
+  .dashboard-controls button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Main content padding */
+  .main-content-pad {
+    padding: 16px !important;
+  }
+
+  /* Stats cards wrap on mobile */
+  .stats-row {
+    flex-wrap: wrap !important;
+  }
+
+  /* Table horizontal scroll */
+  .table-scroll {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Table font size reduce */
+  table {
+    font-size: 12px !important;
+    min-width: 600px;
+  }
+
+  /* Shrink update buttons on mobile */
+  .update-btn {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+}

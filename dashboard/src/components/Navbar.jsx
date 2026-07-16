@@ -1,6 +1,6 @@
 import React from "react";
 
-function Navbar({ activeTab, setActiveTab }) {
+function Navbar({ activeTab, setActiveTab, sidebarOpen, onClose, isMobile }) {
   const navItems = [
     {
       id: "attendance",
@@ -16,10 +16,11 @@ function Navbar({ activeTab, setActiveTab }) {
 
   return (
     <div
-      className="glass-panel"
+      className={`glass-panel mobile-sidebar${sidebarOpen ? " open" : ""}`}
       style={{
-        width: "260px",
-        minWidth: "260px",
+        display: isMobile && !sidebarOpen ? "none" : "flex",
+        width: "300px",
+        minWidth: "300px",
         height: "100vh",
         display: "flex",
         flexDirection: "column",
@@ -35,23 +36,18 @@ function Navbar({ activeTab, setActiveTab }) {
     >
       <div>
         {/* Header Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "40px", padding: "0 24px" }}>
-          <div style={{
-            width: "36px",
-            height: "36px",
-            borderRadius: "8px",
-            background: "#ffffff",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--bg-panel-solid)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-            </svg>
-          </div>
-          <div>
-            <h2 style={{ fontSize: "16px", margin: 0, fontWeight: "700", color: "var(--text-primary)", letterSpacing: "0.5px" }}>SchoolOrg</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "40px", padding: "0 24px" }}>
+          <img src="/logo.png" alt="SEAIT Logo" style={{ width: "64px", height: "64px", objectFit: "contain", flexShrink: 0 }} />
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <h2 style={{ fontSize: "13px", margin: 0, fontWeight: "700", color: "var(--text-primary)", letterSpacing: "0.5px", lineHeight: "1.4" }}>
+              School of Engineering,
+            </h2>
+            <h2 style={{ fontSize: "13px", margin: 0, fontWeight: "700", color: "var(--text-primary)", letterSpacing: "0.5px", lineHeight: "1.4" }}>
+              Architecture and
+            </h2>
+            <h2 style={{ fontSize: "13px", margin: 0, fontWeight: "700", color: "var(--text-primary)", letterSpacing: "0.5px", lineHeight: "1.4" }}>
+              Information Technology
+            </h2>
           </div>
         </div>
 

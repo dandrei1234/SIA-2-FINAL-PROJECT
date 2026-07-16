@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../config";
 
 function AttendanceStats({ eventId, refreshTrigger }) {
   const [stats, setStats] = useState(null);
@@ -12,7 +13,7 @@ function AttendanceStats({ eventId, refreshTrigger }) {
 
   const fetchStats = async () => {
     try {
-      const res = await axios.get(`http://${window.location.hostname}:1337/api/attendance/stats/${eventId}`);
+      const res = await axios.get(`${API_URL}/attendance/stats/${eventId}`);
       setStats(res.data);
     } catch (error) {
       console.error("Error fetching stats:", error);

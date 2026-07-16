@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../config";
 
 function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
   const [records, setRecords] = useState([]);
@@ -16,12 +17,12 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
   const fetchRecords = async () => {
     setLoading(true);
     try {
-      const membersRes = await axios.get(`http://${window.location.hostname}:1337/api/members`);
+      const membersRes = await axios.get(`${API_URL}/members`);
       const allMembers = membersRes.data;
 
       let attendanceRecords = [];
       if (eventId) {
-        const attRes = await axios.get(`http://${window.location.hostname}:1337/api/attendance/event/${eventId}`);
+        const attRes = await axios.get(`${API_URL}/attendance/event/${eventId}`);
         attendanceRecords = attRes.data;
       }
 
@@ -60,7 +61,7 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
         checkIn: newStatus === 'Present' && !record.checkIn ? new Date() : record.checkIn
       };
 
-      await axios.post(`http://${window.location.hostname}:1337/api/attendance`, payload);
+      await axios.post(`${API_URL}/attendance`, payload);
       fetchRecords();
       if (onRecordChange) onRecordChange();
     } catch (error) {

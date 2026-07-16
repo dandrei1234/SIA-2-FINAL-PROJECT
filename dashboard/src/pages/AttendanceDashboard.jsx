@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../config";
 import { Dialog, DialogContent, DialogTitle, Button, Chip } from "@mui/material";
 import AttendanceScanner from "../components/AttendanceScanner";
 import AttendanceList from "../components/AttendanceList";
@@ -17,7 +18,7 @@ function AttendanceDashboard() {
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get(`http://${window.location.hostname}:1337/api/events`);
+      const res = await axios.get(`${API_URL}/events`);
       setEvents(res.data);
       if (res.data.length > 0) {
         setSelectedEventId(res.data[0]._id);

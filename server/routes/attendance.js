@@ -60,7 +60,8 @@ router.post("/check-in", async (req, res) => {
     }
 
     await attendance.save();
-    
+
+
 
     const populated = await Attendance.findById(attendance._id).populate("member");
     

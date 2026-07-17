@@ -20,7 +20,16 @@ router.get("/event/:eventId", async (req, res) => {
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
-    const members = await Member.find({ organizationId: event.organizingClub, membershipStatus: { $in: ["Active", "active"] } }).sort({ lastName: 1, firstName: 1 });
+    
+    const query = { membershipStatus: { $in: ["Active", "active"] } };
+    const organizingClubLower = (event.organizingClub || "").trim().toLowerCase();
+    const isAllOrg = ["all", "all organization", "all organizations"].includes(organizingClubLower);
+    
+    if (!isAllOrg) {
+      query.organizationId = event.organizingClub;
+    }
+
+    const members = await Member.find(query).sort({ lastName: 1, firstName: 1 });
     res.json(members);
   } catch (error) {
     res.status(500).json({ message: error.message });

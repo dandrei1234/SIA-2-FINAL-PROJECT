@@ -85,7 +85,9 @@ router.get("/event/:eventId", async (req, res) => {
     const records = await Attendance.find({ event: req.params.eventId })
       .populate("member")
       .sort({ checkIn: -1 });
-    res.json(records);
+    // Filter records to only include active members
+    const activeRecords = records.filter(r => r.member && ["Active", "active"].includes(r.member.membershipStatus));
+    res.json(activeRecords);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -113,13 +115,25 @@ router.get("/stats/:eventId", async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    const totalMembers = await Member.countDocuments({ organizationId: event.organizingClub, membershipStatus: { $in: ["Active", "active"] } });
+    const query = { membershipStatus: { $in: ["Active", "active"] } };
+    const organizingClubLower = (event.organizingClub || "").trim().toLowerCase();
+    const isAllOrg = ["all", "all organization", "all organizations"].includes(organizingClubLower);
+    
+    if (!isAllOrg) {
+      query.organizationId = event.organizingClub;
+    }
+
+    const totalMembers = await Member.countDocuments(query);
     
 
-    const records = await Attendance.find({ event: eventId });
-    const checkInCount = records.length;
-    const presentCount = records.filter(r => r.status === "Present").length;
-    const absentCount = records.filter(r => r.status === "Absent").length;
+    const records = await Attendance.find({ event: eventId }).populate("member");
+    
+    // Filter records to only include active members
+    const activeRecords = records.filter(r => r.member && ["Active", "active"].includes(r.member.membershipStatus));
+    
+    const checkInCount = activeRecords.length;
+    const presentCount = activeRecords.filter(r => r.status === "Present").length;
+    const absentCount = activeRecords.filter(r => r.status === "Absent").length;
 
     const attendanceRate = totalMembers > 0 ? Math.round((presentCount / totalMembers) * 100) : 0;
 

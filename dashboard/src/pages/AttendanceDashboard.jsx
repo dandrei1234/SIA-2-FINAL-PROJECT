@@ -8,6 +8,7 @@ import AttendanceStats from "../components/AttendanceStats";
 
 function AttendanceDashboard({ onOpenSidebar }) {
   const [events, setEvents] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("active");
   const [selectedEventId, setSelectedEventId] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -20,13 +21,26 @@ function AttendanceDashboard({ onOpenSidebar }) {
     try {
       const res = await axios.get(`${API_URL}/events`);
       setEvents(res.data);
-      if (res.data.length > 0) {
-        setSelectedEventId(res.data[0]._id);
-      }
     } catch (error) {
       console.error("Error fetching events:", error);
     }
   };
+
+  const filteredEvents = events.filter(ev => {
+    if (statusFilter === "all") return true;
+    return (ev.status || "").toLowerCase() === statusFilter.toLowerCase();
+  });
+
+  useEffect(() => {
+    if (filteredEvents.length > 0) {
+      const currentInFiltered = filteredEvents.find(ev => ev._id === selectedEventId);
+      if (!currentInFiltered) {
+        setSelectedEventId(filteredEvents[0]._id);
+      }
+    } else {
+      setSelectedEventId("");
+    }
+  }, [statusFilter, events]);
 
   const handleScanSuccess = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -62,6 +76,26 @@ function AttendanceDashboard({ onOpenSidebar }) {
             </p>
           </div>
           <div className="dashboard-controls" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{
+                background: "var(--bg-space)",
+                border: "1px solid var(--border-glow)",
+                color: "var(--text-primary)",
+                padding: "10px 16px",
+                borderRadius: "8px",
+                fontSize: "14px",
+                outline: "none",
+                cursor: "pointer",
+                minWidth: "150px"
+              }}
+            >
+              <option value="active" style={{ background: "var(--bg-panel)", color: "var(--text-primary)" }}>Active Events</option>
+              <option value="completed" style={{ background: "var(--bg-panel)", color: "var(--text-primary)" }}>Completed Events</option>
+              <option value="all" style={{ background: "var(--bg-panel)", color: "var(--text-primary)" }}>All Events</option>
+            </select>
+
             <select 
               value={selectedEventId}
               onChange={(e) => setSelectedEventId(e.target.value)}
@@ -77,10 +111,10 @@ function AttendanceDashboard({ onOpenSidebar }) {
                 minWidth: "200px"
               }}
             >
-              {events.length === 0 ? (
+              {filteredEvents.length === 0 ? (
                 <option value="">No Events Available</option>
               ) : (
-                events.map(ev => (
+                filteredEvents.map(ev => (
                   <option key={ev._id} value={ev._id} style={{ background: "var(--bg-panel)", color: "var(--text-primary)" }}>
                     {ev.title}
                   </option>

@@ -5,7 +5,7 @@ const Event = require("../models/Event");
 // GET all events
 router.get("/", async (req, res) => {
   try {
-    const events = await Event.find().sort({ schedule: -1 });
+    const events = await Event.find({ status: { $in: ["active", "completed", "Active", "Completed"] } }).sort({ schedule: -1 });
     res.json(events);
   } catch (error) {
     res.status(500).json({ message: error.message });

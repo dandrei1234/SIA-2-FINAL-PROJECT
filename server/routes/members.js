@@ -5,7 +5,7 @@ const Member = require("../models/Member");
 // GET all members
 router.get("/", async (req, res) => {
   try {
-    const members = await Member.find().sort({ lastName: 1, firstName: 1 });
+    const members = await Member.find({ membershipStatus: { $nin: ["Inactive", "inactive"] } }).sort({ lastName: 1, firstName: 1 });
     res.json(members);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -20,7 +20,7 @@ router.get("/event/:eventId", async (req, res) => {
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
-    const members = await Member.find({ organizationId: event.organizingClub }).sort({ lastName: 1, firstName: 1 });
+    const members = await Member.find({ organizationId: event.organizingClub, membershipStatus: { $in: ["Active", "active"] } }).sort({ lastName: 1, firstName: 1 });
     res.json(members);
   } catch (error) {
     res.status(500).json({ message: error.message });

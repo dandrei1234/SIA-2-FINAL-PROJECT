@@ -113,7 +113,7 @@ router.get("/stats/:eventId", async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    const totalMembers = await Member.countDocuments({ organizationId: event.organizingClub });
+    const totalMembers = await Member.countDocuments({ organizationId: event.organizingClub, membershipStatus: { $in: ["Active", "active"] } });
     
 
     const records = await Attendance.find({ event: eventId });

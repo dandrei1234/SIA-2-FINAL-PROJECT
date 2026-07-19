@@ -108,21 +108,23 @@ function Navbar({ activeTab, setActiveTab, sidebarOpen, onClose, isMobile }) {
       <div style={{ padding: "0 24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px 0", borderTop: "1px solid var(--border-glow)" }}>
           <div style={{
-            width: "32px",
-            height: "32px",
+            width: "36px",
+            height: "36px",
             borderRadius: "50%",
-            background: "#ffffff",
-            color: "var(--bg-panel-solid)",
+            background: "#7b1113",
+            color: "#ffffff",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "12px",
-            fontWeight: "700"
+            fontSize: "15px",
+            fontWeight: "700",
+            flexShrink: 0,
+            boxShadow: "0 2px 8px rgba(123,17,19,0.35)"
           }}>
-            CA
+            A
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>Student</span>
+            <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>Admin</span>
             <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>Super Admin</span>
           </div>
           <div style={{ marginLeft: "auto", color: "var(--text-muted)", cursor: "pointer" }}>

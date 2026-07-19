@@ -252,11 +252,35 @@ function AttendanceDashboard({ onOpenSidebar }) {
           </div>
         </div>
 
-        {/* Stats Row */}
-        <AttendanceStats eventId={selectedEventId} refreshTrigger={refreshTrigger} />
-
-        {/* List Section */}
-        <AttendanceList eventId={selectedEventId} refreshTrigger={refreshTrigger} onRecordChange={handleScanSuccess} isLocked={isLocked} />
+        {/* Stats + List — only show after Open Attendance is clicked, or when locked/completed */}
+        {(isAttendanceOpen || isLocked) ? (
+          <>
+            <AttendanceStats eventId={selectedEventId} refreshTrigger={refreshTrigger} />
+            <AttendanceList eventId={selectedEventId} refreshTrigger={refreshTrigger} onRecordChange={handleScanSuccess} isLocked={isLocked} />
+          </>
+        ) : (
+          selectedEventId ? (
+            <div style={{
+              background: "var(--bg-panel)", borderRadius: "12px",
+              border: "1px dashed var(--border-glow)",
+              padding: "60px 40px", textAlign: "center",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: "16px"
+            }}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--text-muted)", opacity: 0.4 }}>
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <div>
+                <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", color: "var(--text-primary)", fontWeight: "600" }}>
+                  Attendance Not Yet Opened
+                </h3>
+                <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)" }}>
+                  Click <strong style={{ color: "#7b1113" }}>Open Attendance</strong> to start recording and view the member list.
+                </p>
+              </div>
+            </div>
+          ) : null
+        )}
 
       </div>
 

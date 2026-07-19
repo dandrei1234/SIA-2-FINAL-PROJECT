@@ -34,8 +34,17 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange, isLocked }) {
         attendanceRecords = attRes.data;
       }
 
+      // Build a lookup of studentIds that are in the members collection
+      const allMemberStudentIds = allMembers.map(m => (m.studentId || "").toString());
+      const allMemberIds = allMembers.map(m => m._id.toString());
+
       const merged = allMembers.map(member => {
-        const record = attendanceRecords.find(r => r.member && r.member._id === member._id);
+        // Match by ObjectId first, then fall back to studentId
+        const record = attendanceRecords.find(r => {
+          if (r.member && r.member._id.toString() === member._id.toString()) return true;
+          if (!r.member && r.studentId && r.studentId.toString() === (member.studentId || "").toString()) return true;
+          return false;
+        });
         return {
           _id: record ? record._id : `virtual-${member._id}`,
           member: member,
@@ -47,12 +56,16 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange, isLocked }) {
         };
       });
 
-      // FIX: Also include attendance records where the member was deleted from JP's collection
-      // These records won't be in allMembers, so we add them separately using stored data
-      const allMemberIds = allMembers.map(m => m._id);
+      // Only include true orphans — records where:
+      // 1. member ref is null AND studentId doesn't match anyone in allMembers, OR
+      // 2. member ref exists but ID not in allMembers
       const orphanRecords = attendanceRecords.filter(r => {
-        if (!r.member) return true; // member was deleted
-        return !allMemberIds.includes(r.member._id);
+        if (!r.member) {
+          // null member — check if studentId matches a known member
+          const sid = (r.studentId || "").toString();
+          return !allMemberStudentIds.includes(sid);
+        }
+        return !allMemberIds.includes(r.member._id.toString());
       });
       const orphanRows = orphanRecords.map(r => ({
         _id: r._id,

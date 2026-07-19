@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
-import { Dialog, DialogContent, DialogTitle, Button, Chip } from "@mui/material";
+import { Dialog, DialogContent, DialogTitle } from "@mui/material";
 import AttendanceScanner from "../components/AttendanceScanner";
 import AttendanceList from "../components/AttendanceList";
 import AttendanceStats from "../components/AttendanceStats";
@@ -12,6 +12,39 @@ function AttendanceDashboard({ onOpenSidebar }) {
   const [selectedEventId, setSelectedEventId] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [scannerOpen, setScannerOpen] = useState(false);
+
+  // Attendance session state: stored per event in localStorage
+  // attendanceSessions = { [eventId]: "open" | "closed" }
+  const [attendanceSessions, setAttendanceSessions] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("attendanceSessions") || "{}");
+    } catch { return {}; }
+  });
+
+  const isAttendanceOpen = selectedEventId ? (attendanceSessions[selectedEventId] === "open") : false;
+
+  const openAttendance = () => {
+    const updated = { ...attendanceSessions, [selectedEventId]: "open" };
+    setAttendanceSessions(updated);
+    localStorage.setItem("attendanceSessions", JSON.stringify(updated));
+  };
+
+  const closeAttendance = async () => {
+    try {
+      // Mark the event as completed in the database
+      await axios.put(`${API_URL}/events/${selectedEventId}`, { status: "completed" });
+    } catch (error) {
+      console.error("Failed to update event status:", error);
+    }
+    const updated = { ...attendanceSessions, [selectedEventId]: "closed" };
+    setAttendanceSessions(updated);
+    localStorage.setItem("attendanceSessions", JSON.stringify(updated));
+    setScannerOpen(false);
+    // Switch filter to Completed so the event stays visible
+    setStatusFilter("completed");
+    // Refresh events list
+    fetchEvents();
+  };
 
   useEffect(() => {
     fetchEvents();
@@ -33,6 +66,9 @@ function AttendanceDashboard({ onOpenSidebar }) {
 
   const selectedEvent = filteredEvents.find(ev => ev._id === selectedEventId) || null;
   const isCompleted = selectedEvent ? /^completed$/i.test(selectedEvent.status) : false;
+  const attendanceClosed = selectedEventId ? (attendanceSessions[selectedEventId] === "closed") : false;
+  // Locked = event is completed OR admin manually closed attendance
+  const isLocked = isCompleted || attendanceClosed;
 
   useEffect(() => {
     if (filteredEvents.length > 0) {
@@ -71,7 +107,7 @@ function AttendanceDashboard({ onOpenSidebar }) {
 
       <div className="main-content-pad" style={{ padding: "32px", display: "flex", flexDirection: "column", gap: "24px" }}>
         {/* Header Section */}
-          <div className="dashboard-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="dashboard-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <h1 style={{ fontSize: "24px", margin: 0, fontWeight: "700" }}>Attendance</h1>
             <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "4px", margin: 0 }}>
@@ -79,6 +115,7 @@ function AttendanceDashboard({ onOpenSidebar }) {
             </p>
           </div>
           <div className="dashboard-controls" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            {/* Event Status Filter */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -99,7 +136,8 @@ function AttendanceDashboard({ onOpenSidebar }) {
               <option value="all" style={{ background: "var(--bg-panel)", color: "var(--text-primary)" }}>All Events</option>
             </select>
 
-            <select 
+            {/* Event Picker */}
+            <select
               value={selectedEventId}
               onChange={(e) => setSelectedEventId(e.target.value)}
               style={{
@@ -125,36 +163,128 @@ function AttendanceDashboard({ onOpenSidebar }) {
               )}
             </select>
 
-            {!isCompleted && (
-              <button 
-                onClick={() => setScannerOpen(true)}
-                disabled={!selectedEventId}
-                style={{ 
-                  display: "flex", alignItems: "center", gap: "8px", 
-                  background: "var(--accent-cyan)", color: "#fff", 
-                  border: "none", padding: "10px 16px", borderRadius: "8px", 
-                  fontWeight: "600", fontSize: "14px", cursor: selectedEventId ? "pointer" : "not-allowed",
-                  boxShadow: "0 4px 14px var(--accent-cyan-glow)",
-                  opacity: selectedEventId ? 1 : 0.5
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                Mark Attendance
-              </button>
-            )}
-            {isCompleted && (
+            {/* Action Button based on state */}
+            {isCompleted ? (
+              // Completed event — locked
               <span style={{ fontSize: "13px", color: "var(--text-muted)", fontStyle: "italic", padding: "10px 16px", border: "1px solid var(--border-glow)", borderRadius: "8px" }}>
                 🔒 Event Completed
               </span>
+            ) : !isAttendanceOpen ? (
+              // Attendance not yet opened — show Open button
+              <button
+                onClick={openAttendance}
+                disabled={!selectedEventId}
+                style={{
+                  display: "flex", alignItems: "center", gap: "8px",
+                  background: "#7b1113", color: "#fff",
+                  border: "none", padding: "10px 20px", borderRadius: "8px",
+                  fontWeight: "600", fontSize: "14px",
+                  cursor: selectedEventId ? "pointer" : "not-allowed",
+                  boxShadow: "0 4px 14px rgba(123,17,19,0.35)",
+                  opacity: selectedEventId ? 1 : 0.5,
+                  transition: "all 0.2s"
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Open Attendance
+              </button>
+            ) : (
+              // Attendance is open — show scanner + close button
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                {/* Green pulsing dot to show attendance is live */}
+                <span style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#10b981", fontWeight: "600" }}>
+                  <span style={{
+                    width: "8px", height: "8px", borderRadius: "50%",
+                    background: "#10b981",
+                    display: "inline-block",
+                    animation: "pulse-dot 1.5s infinite"
+                  }} />
+                  Attendance Open
+                </span>
+
+                {/* Undo button — cancels open without closing the event */}
+                <button
+                  onClick={() => {
+                    const updated = { ...attendanceSessions };
+                    delete updated[selectedEventId];
+                    setAttendanceSessions(updated);
+                    localStorage.setItem("attendanceSessions", JSON.stringify(updated));
+                  }}
+                  title="Undo — go back to before opening attendance"
+                  style={{
+                    display: "flex", alignItems: "center", gap: "6px",
+                    background: "transparent", color: "var(--text-muted)",
+                    border: "1px solid var(--border-glow)", padding: "10px 14px", borderRadius: "8px",
+                    fontWeight: "500", fontSize: "13px", cursor: "pointer",
+                    transition: "all 0.2s"
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "var(--bg-space)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 14 4 9 9 4"></polyline>
+                    <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+                  </svg>
+                  Undo
+                </button>
+
+                <button
+                  onClick={closeAttendance}
+                  style={{
+                    display: "flex", alignItems: "center", gap: "8px",
+                    background: "transparent", color: "#ef4444",
+                    border: "1px solid #ef4444", padding: "10px 16px", borderRadius: "8px",
+                    fontWeight: "600", fontSize: "14px", cursor: "pointer",
+                    transition: "all 0.2s"
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  Close Attendance
+                </button>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Stats Row */}
-        <AttendanceStats eventId={selectedEventId} refreshTrigger={refreshTrigger} />
+        {/* Stats Row — only show when attendance is open or locked */}
+        {(isAttendanceOpen || isLocked) && (
+          <AttendanceStats eventId={selectedEventId} refreshTrigger={refreshTrigger} />
+        )}
 
-        {/* List Section */}
-        <AttendanceList eventId={selectedEventId} refreshTrigger={refreshTrigger} onRecordChange={handleScanSuccess} isCompleted={isCompleted} />
+        {/* List Section — only show when attendance is open or locked */}
+        {(isAttendanceOpen || isLocked) ? (
+          <AttendanceList eventId={selectedEventId} refreshTrigger={refreshTrigger} onRecordChange={handleScanSuccess} isLocked={isLocked} />
+        ) : (
+          selectedEventId ? (
+            <div style={{
+              background: "var(--bg-panel)", borderRadius: "12px",
+              border: "1px dashed var(--border-glow)",
+              padding: "60px 40px", textAlign: "center",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: "16px"
+            }}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--text-muted)", opacity: 0.5 }}>
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <div>
+                <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", color: "var(--text-primary)", fontWeight: "600" }}>
+                  Attendance Not Yet Opened
+                </h3>
+                <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)" }}>
+                  Click <strong style={{ color: "#7b1113" }}>Open Attendance</strong> to start recording and view the member list.
+                </p>
+              </div>
+            </div>
+          ) : null
+        )}
 
       </div>
 

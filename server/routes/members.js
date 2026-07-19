@@ -26,7 +26,7 @@ router.get("/event/:eventId", async (req, res) => {
     const isAllOrg = ["all", "all organization", "all organizations"].includes(organizingClubLower);
 
     if (!isAllOrg) {
-      query.organizationId = event.organizingClub;
+      query.organizationId = { $regex: new RegExp(`^${event.organizingClub.trim()}$`, "i") };
     }
 
     const members = await Member.find(query).sort({ lastName: 1, firstName: 1 });

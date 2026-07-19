@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
 
-function AttendanceList({ eventId, refreshTrigger, onRecordChange, isCompleted }) {
+function AttendanceList({ eventId, refreshTrigger, onRecordChange, isLocked }) {
   const [records, setRecords] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ROWS_PER_PAGE = 10;
 
   useEffect(() => {
     if (eventId) {
@@ -93,6 +95,7 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange, isCompleted }
     }
   };
 
+
   const filteredRecords = records.filter((r) => {
     const student = r.member || {};
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.toLowerCase();
@@ -103,6 +106,17 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange, isCompleted }
     if (statusFilter === "all") return matchesSearch;
     return matchesSearch && r.status?.toLowerCase() === statusFilter.toLowerCase();
   });
+
+  // Reset to page 1 when filter or search changes
+  useEffect(() => { setCurrentPage(1); }, [search, statusFilter, eventId]);
+
+  const totalPages = Math.ceil(filteredRecords.length / ROWS_PER_PAGE);
+  const paginatedRecords = filteredRecords.slice(
+    (currentPage - 1) * ROWS_PER_PAGE,
+    currentPage * ROWS_PER_PAGE
+  );
+  const startEntry = filteredRecords.length === 0 ? 0 : (currentPage - 1) * ROWS_PER_PAGE + 1;
+  const endEntry = Math.min(currentPage * ROWS_PER_PAGE, filteredRecords.length);
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -176,7 +190,7 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange, isCompleted }
                 <th style={{ padding: "16px 8px", fontWeight: "600", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.5px" }}>Time In</th>
                 <th style={{ padding: "16px 8px", fontWeight: "600", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.5px" }}>Status</th>
                 <th style={{ padding: "16px 8px", fontWeight: "600", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.5px", textAlign: "right" }}>
-                  {isCompleted ? "🔒 Locked" : "Update Status"}
+                  {isLocked ? "🔒 Locked" : "Update Status"}
                 </th>
               </tr>
             </thead>
@@ -188,7 +202,7 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange, isCompleted }
                   <td colSpan="6" style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>No members found</td>
                 </tr>
               ) : (
-                filteredRecords.map((r) => {
+                paginatedRecords.map((r) => {
                   const colors = getStatusColor(r.status);
 
                   return (
@@ -213,8 +227,8 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange, isCompleted }
                         </span>
                       </td>
                       <td style={{ padding: "12px 8px", textAlign: "right" }}>
-                        {isCompleted ? (
-                          <span style={{ fontSize: "12px", color: "var(--text-muted)", fontStyle: "italic" }}>Read-only</span>
+                        {isLocked ? (
+                          <span style={{ fontSize: "12px", color: "var(--text-muted)", fontStyle: "italic" }}>—</span>
                         ) : (
                           <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
                             <button onClick={() => handleToggleStatus(r, 'Present')} style={{ background: "var(--accent-green-glow)", border: "1px solid rgba(16, 185, 129, 0.2)", padding: "4px 10px", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--accent-green)", fontSize: "11px", fontWeight: "600" }}>
@@ -236,9 +250,50 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange, isCompleted }
           </table>
         )}
 
-        <div style={{ marginTop: "16px", fontSize: "12px", color: "var(--text-muted)" }}>
-          {filteredRecords.length} total registered members
-        </div>
+        {/* Pagination */}
+        {filteredRecords.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", paddingTop: "16px", borderTop: "1px solid var(--border-glow)", flexWrap: "wrap" }}>
+            <span style={{ fontSize: "13px", color: "var(--text-muted)", marginRight: "8px" }}>
+              Showing {startEntry}–{endEntry} of {filteredRecords.length}
+            </span>
+
+            {/* Prev */}
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              style={{ width: "30px", height: "30px", borderRadius: "50%", border: "1px solid var(--border-glow)", background: "transparent", cursor: currentPage === 1 ? "not-allowed" : "pointer", color: currentPage === 1 ? "var(--text-muted)" : "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}
+            >
+              ‹
+            </button>
+
+            {/* Page Numbers */}
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                style={{
+                  width: "30px", height: "30px", borderRadius: "50%",
+                  border: page === currentPage ? "none" : "1px solid var(--border-glow)",
+                  background: page === currentPage ? "#7b1113" : "transparent",
+                  color: page === currentPage ? "#fff" : "var(--text-primary)",
+                  cursor: "pointer", fontWeight: page === currentPage ? "700" : "400",
+                  fontSize: "13px", display: "flex", alignItems: "center", justifyContent: "center"
+                }}
+              >
+                {page}
+              </button>
+            ))}
+
+            {/* Next */}
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages || totalPages === 0}
+              style={{ width: "30px", height: "30px", borderRadius: "50%", border: "1px solid var(--border-glow)", background: "transparent", cursor: currentPage === totalPages ? "not-allowed" : "pointer", color: currentPage === totalPages ? "var(--text-muted)" : "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}
+            >
+              ›
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

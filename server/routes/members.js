@@ -20,11 +20,11 @@ router.get("/event/:eventId", async (req, res) => {
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
-    
+
     const query = { membershipStatus: { $in: ["Active", "active"] } };
     const organizingClubLower = (event.organizingClub || "").trim().toLowerCase();
     const isAllOrg = ["all", "all organization", "all organizations"].includes(organizingClubLower);
-    
+
     if (!isAllOrg) {
       query.organizationId = event.organizingClub;
     }
@@ -56,7 +56,7 @@ router.get("/:identifier", async (req, res) => {
 // POST create new member
 router.post("/", async (req, res) => {
   const { studentId, firstName, lastName, email, course, role, status } = req.body;
-  
+
   if (!studentId || !firstName || !lastName || !email) {
     return res.status(400).json({ message: "Required fields are missing" });
   }

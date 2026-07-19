@@ -28,7 +28,7 @@ router.get("/:id", async (req, res) => {
 // POST create new event
 router.post("/", async (req, res) => {
   const { title, description, date, venue, capacity, status } = req.body;
-  
+
   if (!title || !date) {
     return res.status(400).json({ message: "Title and date are required" });
   }

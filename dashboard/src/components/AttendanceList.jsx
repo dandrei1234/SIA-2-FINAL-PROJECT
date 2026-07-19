@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
 
-function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
+function AttendanceList({ eventId, refreshTrigger, onRecordChange, isCompleted }) {
   const [records, setRecords] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -39,14 +39,31 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
           member: member,
           event: record ? record.event : { _id: eventId },
           checkIn: record ? record.checkIn : null,
-
           status: record ? record.status : "-",
           remarks: record ? record.remarks : "",
           isVirtual: !record
         };
       });
 
-      setRecords(merged);
+      // FIX: Also include attendance records where the member was deleted from JP's collection
+      // These records won't be in allMembers, so we add them separately using stored data
+      const allMemberIds = allMembers.map(m => m._id);
+      const orphanRecords = attendanceRecords.filter(r => {
+        if (!r.member) return true; // member was deleted
+        return !allMemberIds.includes(r.member._id);
+      });
+      const orphanRows = orphanRecords.map(r => ({
+        _id: r._id,
+        member: r.member || { firstName: r.memberName || "Unknown", lastName: "", studentId: r.studentId || "-", course: "-" },
+        event: r.event,
+        checkIn: r.checkIn,
+        status: r.status,
+        remarks: r.remarks,
+        isVirtual: false,
+        isOrphan: true
+      }));
+
+      setRecords([...merged, ...orphanRows]);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -158,7 +175,9 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
                 <th style={{ padding: "16px 8px", fontWeight: "600", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.5px" }}>Course</th>
                 <th style={{ padding: "16px 8px", fontWeight: "600", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.5px" }}>Time In</th>
                 <th style={{ padding: "16px 8px", fontWeight: "600", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.5px" }}>Status</th>
-                <th style={{ padding: "16px 8px", fontWeight: "600", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.5px", textAlign: "right" }}>Update Status</th>
+                <th style={{ padding: "16px 8px", fontWeight: "600", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.5px", textAlign: "right" }}>
+                  {isCompleted ? "🔒 Locked" : "Update Status"}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -194,16 +213,20 @@ function AttendanceList({ eventId, refreshTrigger, onRecordChange }) {
                         </span>
                       </td>
                       <td style={{ padding: "12px 8px", textAlign: "right" }}>
-                        <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-                          <button onClick={() => handleToggleStatus(r, 'Present')} style={{ background: "var(--accent-green-glow)", border: "1px solid rgba(16, 185, 129, 0.2)", padding: "4px 10px", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--accent-green)", fontSize: "11px", fontWeight: "600" }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "4px" }}><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            Present
-                          </button>
-                          <button onClick={() => handleToggleStatus(r, 'Absent')} style={{ background: "var(--accent-red-glow)", border: "1px solid rgba(123, 17, 19, 0.2)", padding: "4px 10px", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--accent-red)", fontSize: "11px", fontWeight: "600" }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "4px" }}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                            Absent
-                          </button>
-                        </div>
+                        {isCompleted ? (
+                          <span style={{ fontSize: "12px", color: "var(--text-muted)", fontStyle: "italic" }}>Read-only</span>
+                        ) : (
+                          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                            <button onClick={() => handleToggleStatus(r, 'Present')} style={{ background: "var(--accent-green-glow)", border: "1px solid rgba(16, 185, 129, 0.2)", padding: "4px 10px", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--accent-green)", fontSize: "11px", fontWeight: "600" }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "4px" }}><polyline points="20 6 9 17 4 12"></polyline></svg>
+                              Present
+                            </button>
+                            <button onClick={() => handleToggleStatus(r, 'Absent')} style={{ background: "var(--accent-red-glow)", border: "1px solid rgba(123, 17, 19, 0.2)", padding: "4px 10px", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--accent-red)", fontSize: "11px", fontWeight: "600" }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "4px" }}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                              Absent
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );

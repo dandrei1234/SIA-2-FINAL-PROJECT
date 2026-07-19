@@ -31,6 +31,9 @@ function AttendanceDashboard({ onOpenSidebar }) {
     return (ev.status || "").toLowerCase() === statusFilter.toLowerCase();
   });
 
+  const selectedEvent = filteredEvents.find(ev => ev._id === selectedEventId) || null;
+  const isCompleted = selectedEvent ? /^completed$/i.test(selectedEvent.status) : false;
+
   useEffect(() => {
     if (filteredEvents.length > 0) {
       const currentInFiltered = filteredEvents.find(ev => ev._id === selectedEventId);
@@ -122,21 +125,28 @@ function AttendanceDashboard({ onOpenSidebar }) {
               )}
             </select>
 
-            <button 
-              onClick={() => setScannerOpen(true)}
-              disabled={!selectedEventId}
-              style={{ 
-                display: "flex", alignItems: "center", gap: "8px", 
-                background: "var(--accent-cyan)", color: "#fff", 
-                border: "none", padding: "10px 16px", borderRadius: "8px", 
-                fontWeight: "600", fontSize: "14px", cursor: selectedEventId ? "pointer" : "not-allowed",
-                boxShadow: "0 4px 14px var(--accent-cyan-glow)",
-                opacity: selectedEventId ? 1 : 0.5
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              Mark Attendance
-            </button>
+            {!isCompleted && (
+              <button 
+                onClick={() => setScannerOpen(true)}
+                disabled={!selectedEventId}
+                style={{ 
+                  display: "flex", alignItems: "center", gap: "8px", 
+                  background: "var(--accent-cyan)", color: "#fff", 
+                  border: "none", padding: "10px 16px", borderRadius: "8px", 
+                  fontWeight: "600", fontSize: "14px", cursor: selectedEventId ? "pointer" : "not-allowed",
+                  boxShadow: "0 4px 14px var(--accent-cyan-glow)",
+                  opacity: selectedEventId ? 1 : 0.5
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Mark Attendance
+              </button>
+            )}
+            {isCompleted && (
+              <span style={{ fontSize: "13px", color: "var(--text-muted)", fontStyle: "italic", padding: "10px 16px", border: "1px solid var(--border-glow)", borderRadius: "8px" }}>
+                🔒 Event Completed
+              </span>
+            )}
           </div>
         </div>
 
@@ -144,7 +154,7 @@ function AttendanceDashboard({ onOpenSidebar }) {
         <AttendanceStats eventId={selectedEventId} refreshTrigger={refreshTrigger} />
 
         {/* List Section */}
-        <AttendanceList eventId={selectedEventId} refreshTrigger={refreshTrigger} onRecordChange={handleScanSuccess} />
+        <AttendanceList eventId={selectedEventId} refreshTrigger={refreshTrigger} onRecordChange={handleScanSuccess} isCompleted={isCompleted} />
 
       </div>
 

@@ -104,8 +104,6 @@ function Navbar({ activeTab, setActiveTab, sidebarOpen, onClose, isMobile }) {
       <div style={{ padding: "0 12px 8px" }}>
         <a
           href="https://school-organization-management-ecos.vercel.app/dashboard"
-          target="_blank"
-          rel="noopener noreferrer"
           style={{
             display: "flex",
             alignItems: "center",

@@ -100,9 +100,42 @@ function Navbar({ activeTab, setActiveTab, sidebarOpen, onClose, isMobile }) {
           })}
         </div>
       </div>
-
-
-
+      {/* Back to Admin Button */}
+      <div style={{ padding: "0 12px 8px" }}>
+        <a
+          href="https://school-organization-management-ecos.vercel.app/dashboard"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            padding: "12px 16px",
+            borderRadius: "8px",
+            background: "rgba(123,17,19,0.08)",
+            border: "1px solid rgba(123,17,19,0.2)",
+            color: "#7b1113",
+            fontSize: "14px",
+            fontWeight: "600",
+            textDecoration: "none",
+            transition: "all 0.2s",
+            cursor: "pointer"
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = "rgba(123,17,19,0.15)";
+            e.currentTarget.style.borderColor = "#7b1113";
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = "rgba(123,17,19,0.08)";
+            e.currentTarget.style.borderColor = "rgba(123,17,19,0.2)";
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Back to Admin
+        </a>
+      </div>
     </div>
   );
 }

@@ -36,18 +36,15 @@ function Navbar({ activeTab, setActiveTab, sidebarOpen, onClose, isMobile }) {
     >
       <div>
         {/* Header Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "40px", padding: "0 24px" }}>
-          <img src="/logo.png" alt="SEAIT Logo" style={{ width: "64px", height: "64px", objectFit: "contain", flexShrink: 0 }} />
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "40px", padding: "0 24px" }}>
+          <img src="/logo.png" alt="SEAIT Logo" style={{ width: "48px", height: "48px", objectFit: "contain", flexShrink: 0 }} />
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <h2 style={{ fontSize: "13px", margin: 0, fontWeight: "700", color: "var(--text-primary)", letterSpacing: "0.5px", lineHeight: "1.4" }}>
-              School of Engineering,
+            <h2 style={{ fontSize: "12px", margin: 0, fontWeight: "700", color: "var(--text-primary)", letterSpacing: "0.3px", lineHeight: "1.4" }}>
+              School of Engineering,<br />Architecture &amp; IT
             </h2>
-            <h2 style={{ fontSize: "13px", margin: 0, fontWeight: "700", color: "var(--text-primary)", letterSpacing: "0.5px", lineHeight: "1.4" }}>
-              Architecture and
-            </h2>
-            <h2 style={{ fontSize: "13px", margin: 0, fontWeight: "700", color: "var(--text-primary)", letterSpacing: "0.5px", lineHeight: "1.4" }}>
-              Information Technology
-            </h2>
+            <span style={{ fontSize: "10px", fontWeight: "600", color: "var(--text-muted)", letterSpacing: "1.5px", textTransform: "uppercase", marginTop: "3px" }}>
+              Attendance Management
+            </span>
           </div>
         </div>
 

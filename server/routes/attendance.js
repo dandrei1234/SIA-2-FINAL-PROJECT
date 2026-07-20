@@ -136,15 +136,31 @@ router.get("/stats/:eventId", async (req, res) => {
 
     const records = await Attendance.find({ event: eventId }).populate("member");
 
-    // FIX: Case-insensitive active filter, keep records with deleted members using stored data
+    // Filter active records
     const activeRecords = records.filter(r => {
-      if (!r.member) return true; // fallback: member was deleted, keep record
+      if (!r.member) return true;
       return /^active$/i.test(r.member.membershipStatus);
     });
 
-    const checkInCount = activeRecords.length;
-    const presentCount = activeRecords.filter(r => r.status === "Present").length;
-    const absentCount = Math.max(0, totalMembers - presentCount);
+    // Deduplicate by studentId — keep the record with a valid member ref if both exist
+    const seen = new Map();
+    for (const r of activeRecords) {
+      const sid = r.studentId || (r.member ? r.member.studentId : null);
+      if (!sid) continue;
+      if (!seen.has(sid)) {
+        seen.set(sid, r);
+      } else {
+        // Prefer the record that has a proper member reference
+        if (r.member && !seen.get(sid).member) {
+          seen.set(sid, r);
+        }
+      }
+    }
+    const deduped = Array.from(seen.values());
+
+    const checkInCount = deduped.length;
+    const presentCount = deduped.filter(r => r.status === "Present").length;
+    const absentCount = deduped.filter(r => r.status === "Absent").length;
     const attendanceRate = totalMembers > 0 ? Math.round((presentCount / totalMembers) * 100) : 0;
 
     res.json({
@@ -164,7 +180,24 @@ router.get("/stats/:eventId", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const { member, event, checkIn, status, remarks } = req.body;
+
+    // First: try to find by member ObjectId + event
     let attendance = await Attendance.findOne({ member, event });
+
+    // Second: if not found, check for an orphan record (member: null) matching by studentId
+    // This prevents creating duplicate records when a member was re-added by JP
+    if (!attendance) {
+      const memObj = await Member.findById(member);
+      if (memObj) {
+        const orphan = await Attendance.findOne({ studentId: memObj.studentId, event, member: null });
+        if (orphan) {
+          // Re-link the orphan record to the current member
+          orphan.member = member;
+          orphan.memberName = `${memObj.firstName} ${memObj.lastName}`;
+          attendance = orphan;
+        }
+      }
+    }
 
     if (attendance) {
       if (checkIn !== undefined) attendance.checkIn = checkIn;
@@ -172,7 +205,6 @@ router.post("/", async (req, res) => {
       if (remarks !== undefined) attendance.remarks = remarks;
 
       const memObj = await Member.findById(member);
-      // FIX: Keep existing stored name if member was deleted
       if (memObj) {
         attendance.memberName = `${memObj.firstName} ${memObj.lastName}`;
         attendance.studentId = memObj.studentId;
@@ -195,7 +227,6 @@ router.post("/", async (req, res) => {
     const populated = await Attendance.findById(attendance._id).populate("member");
     res.json(populated);
   } catch (error) {
-    // FIX: Handle duplicate key race condition gracefully
     if (error.code === 11000) {
       return res.status(400).json({ message: "Attendance record already exists for this member and event" });
     }

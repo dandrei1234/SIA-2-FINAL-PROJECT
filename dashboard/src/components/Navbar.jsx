@@ -19,8 +19,8 @@ function Navbar({ activeTab, setActiveTab, sidebarOpen, onClose, isMobile }) {
       className={`glass-panel mobile-sidebar${sidebarOpen ? " open" : ""}`}
       style={{
         display: isMobile && !sidebarOpen ? "none" : "flex",
-        width: "300px",
-        minWidth: "300px",
+      width: "240px",
+      minWidth: "240px",
         height: "100vh",
         display: "flex",
         flexDirection: "column",
@@ -68,15 +68,15 @@ function Navbar({ activeTab, setActiveTab, sidebarOpen, onClose, isMobile }) {
                   padding: "12px 16px",
                   borderRadius: "8px",
                   border: "none",
-                  background: isActive ? "var(--accent-cyan-glow)" : "transparent",
-                  color: isActive ? "var(--accent-cyan)" : "var(--text-secondary)",
+                  background: isActive ? "#7b1113" : "transparent",
+                  color: isActive ? "#ffffff" : "var(--text-secondary)",
                   cursor: "pointer",
                   textAlign: "left",
                   fontSize: "14px",
                   fontWeight: isActive ? "600" : "500",
                   transition: "var(--transition-smooth)",
                   outline: "none",
-                  borderLeft: isActive ? "3px solid var(--accent-cyan)" : "3px solid transparent",
+                  borderLeft: "none",
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
@@ -91,10 +91,10 @@ function Navbar({ activeTab, setActiveTab, sidebarOpen, onClose, isMobile }) {
                   }
                 }}
               >
-                <div style={{ color: isActive ? "var(--accent-cyan)" : "var(--text-secondary)", display: "flex", alignItems: "center" }}>
+                <div style={{ color: isActive ? "#ffffff" : "var(--text-secondary)", display: "flex", alignItems: "center" }}>
                   {item.icon}
                 </div>
-                <span style={{ color: isActive ? "var(--accent-cyan)" : "var(--text-secondary)" }}>{item.label}</span>
+                <span style={{ color: isActive ? "#ffffff" : "var(--text-secondary)" }}>{item.label}</span>
               </button>
             );
           })}

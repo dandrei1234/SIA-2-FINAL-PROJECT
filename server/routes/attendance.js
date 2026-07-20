@@ -144,7 +144,7 @@ router.get("/stats/:eventId", async (req, res) => {
 
     const checkInCount = activeRecords.length;
     const presentCount = activeRecords.filter(r => r.status === "Present").length;
-    const absentCount = activeRecords.filter(r => r.status === "Absent").length;
+    const absentCount = Math.max(0, totalMembers - presentCount);
     const attendanceRate = totalMembers > 0 ? Math.round((presentCount / totalMembers) * 100) : 0;
 
     res.json({
